@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>海洋王智灯 Hub - AI 工业照明技术支持与价格培训平台</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Noto Sans SC -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            dark: '#0f172a',
+                            accent: '#0284c7',
+                            gold: '#f59e0b'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Noto Sans SC', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+        .glass-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col custom-scrollbar">
+
+    <!-- 顶部导航栏 -->
+    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-brand-accent flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-brand-500/20">
+                    OK
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold bg-gradient-to-r from-white via-slate-200 to-brand-accent bg-clip-text text-transparent">
+                        海洋王智灯 Hub
+                    </h1>
+                    <p class="text-xs text-slate-400">AI 工业照明技术支持与价格培训平台</p>
+                </div>
+            </div>
+
+            <!-- 全局导航选项卡 -->
+            <nav class="hidden md:flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+                <button onclick="switchTab('catalog')" id="tab-btn-catalog" class="px-4 py-2 rounded-lg text-sm font-medium transition-all text-white bg-brand-600 shadow-md">
+                    <i class="fa-solid fa-magnifying-glass mr-2"></i>价格编码速查
+                </button>
+                <button onclick="switchTab('ingest')" id="tab-btn-ingest" class="px-4 py-2 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-cloud-arrow-up mr-2"></i>AI 资料投喂/更新
+                </button>
+                <button onclick="switchTab('learning')" id="tab-btn-learning" class="px-4 py-2 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white relative">
+                    <i class="fa-solid fa-graduation-cap mr-2"></i>销售培训中心
+                    <span class="absolute -top-1 -right-1 flex h-3 w-3">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-gold opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-3 w-3 bg-brand-gold"></span>
+                    </span>
+                </button>
+            </nav>
+
+            <div class="flex items-center gap-3">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-brand-500/10 text-brand-500 border border-brand-500/20">
+                    <span class="w-2 h-2 rounded-full bg-brand-500 animate-pulse"></span> 技术支持模式
+                </span>
+                <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 text-sm">
+                    吴
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主要工作区 -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- 视图 1：价格与编码模糊速查 (Catalog View) -->
+        <section id="view-catalog" class="space-y-6">
+            <!-- 搜索与筛选工具栏 -->
+            <div class="glass-panel p-5 rounded-2xl space-y-4">
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="relative flex-1">
+                        <i class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="searchInput" oninput="filterProducts()" 
+                               placeholder="支持模糊查询：输入型号 (如 9197)、订货编码、功率 (50W)、防护等级或关键字..." 
+                               class="w-full pl-11 pr-4 py-3 bg-slate-900/90 border border-slate-700 rounded-xl focus:outline-none focus:border-brand-500 text-white placeholder-slate-500 text-sm shadow-inner transition-all">
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <select id="categoryFilter" onchange="filterProducts()" class="bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-brand-500">
+                            <option value="ALL">全部分类</option>
+                            <option value="平台灯">平台灯/通路灯</option>
+                            <option value="高顶灯">高顶灯/工矿灯</option>
+                            <option value="智能配电">智能配电/网关</option>
+                            <option value="吸顶灯">AI 智能吸顶灯</option>
+                        </select>
+                        <button onclick="resetSearch()" class="px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm transition-colors border border-slate-700">
+                            重置
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 快速标签筛选 -->
+                <div class="flex flex-wrap items-center gap-2 text-xs text-slate-400">
+                    <span class="text-slate-500"><i class="fa-solid fa-tags mr-1"></i>热门搜索：</span>
+                    <button onclick="quickSearch('NFC9197')" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700">NFC9197</button>
+                    <button onclick="quickSearch('NGC9828')" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700">NGC9828</button>
+                    <button onclick="quickSearch('呼吸阀')" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700">专利呼吸阀</button>
+                    <button onclick="quickSearch('180lm/w')" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700">180lm/W 高光效</button>
+                    <button onclick="quickSearch('PLC')" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700">PLC 智能调光</button>
+                </div>
+            </div>
+
+            <!-- 统计信息与价格说明 -->
+            <div class="flex items-center justify-between text-xs text-slate-400 px-1">
+                <div>共找到 <span id="product-count" class="font-bold text-brand-500">0</span> 款匹配产品（已包含官网最新核对价格）</div>
+                <div class="flex items-center gap-4">
+                    <span><i class="fa-solid fa-clock-rotate-left text-brand-gold mr-1"></i>价格含历史版本追溯</span>
+                    <span><i class="fa-solid fa-shield-check text-brand-500 mr-1"></i>数据更新于：2026-08</span>
+                </div>
+            </div>
+
+            <!-- 产品网格列表 -->
+            <div id="product-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- 由 JS 动态渲染产品卡片 -->
+            </div>
+        </section>
+
+        <!-- 视图 2：AI 资料投喂与更新 (AI Ingestion View) -->
+        <section id="view-ingest" class="hidden space-y-6">
+            <div class="glass-panel p-6 rounded-2xl space-y-6">
+                <div>
+                    <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles text-brand-gold"></i> AI 智能投喂与产品库更新
+                    </h2>
+                    <p class="text-sm text-slate-400 mt-1">
+                        当海洋王官网价格、产品编码变更或有新 PPT 彩页发布时，直接拖入图片或粘贴文本，AI 将自动解析参数并更新知识库。
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- 左侧：投喂输入区 -->
+                    <div class="space-y-4">
+                        <div class="border-2 border-dashed border-slate-700 hover:border-brand-500 rounded-2xl p-8 text-center bg-slate-900/50 transition-all cursor-pointer group" onclick="document.getElementById('file-input').click()">
+                            <input type="file" id="file-input" class="hidden" accept="image/*,.pdf,.ppt,.pptx" onchange="handleFileSelect(event)">
+                            <div class="w-14 h-14 mx-auto rounded-2xl bg-brand-500/10 text-brand-500 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform mb-3">
+                                <i class="fa-solid fa-cloud-arrow-up"></i>
+                            </div>
+                            <h3 class="text-sm font-semibold text-white">点击上传或拖拽 PPT 彩页/官网价格截图</h3>
+                            <p class="text-xs text-slate-500 mt-1">支持 PNG, JPG, PDF, PPTX (建议投喂官方彩页截图)</p>
+                            <div id="file-name-display" class="mt-3 text-xs text-brand-500 font-medium hidden"></div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">或直接粘贴官网更新文本/彩页说明：</label>
+                            <textarea id="ingest-text-input" rows="6" placeholder="例如：复制官网公告，如：NFC9197-50W 原价680元，自2026年8月起调整为订货价620元，订货编码OK-NFC9197-50W，光效升级至175lm/W..." class="w-full p-3 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-brand-500 placeholder-slate-600 custom-scrollbar"></textarea>
+                        </div>
+
+                        <button onclick="simulateAIParsing()" id="btn-parse-ai" class="w-full py-3 bg-gradient-to-r from-brand-600 to-brand-accent hover:from-brand-500 hover:to-brand-accent text-white font-medium text-sm rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-bolt"></i> 开始 AI 智能解析与提炼
+                        </button>
+                    </div>
+
+                    <!-- 右侧：AI 解析结果 preview -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                            <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+                                <i class="fa-solid fa-microchip text-brand-500"></i> AI 结构化提炼预览
+                            </h3>
+                            <span id="ai-status-tag" class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">等待投喂数据...</span>
+                        </div>
+
+                        <div id="ai-output-box" class="space-y-3 text-xs text-slate-400 min-h-[220px]">
+                            <div class="text-center py-12 text-slate-600">
+                                <i class="fa-regular fa-lightbulb text-3xl mb-2 block"></i>
+                                暂无投喂数据。请在左侧上传或粘贴产品资料。
+                            </div>
+                        </div>
+
+                        <div class="border-t border-slate-800 pt-3 flex justify-end gap-2">
+                            <button onclick="saveIngestedData()" id="btn-save-ingest" disabled class="px-4 py-2 bg-slate-800 text-slate-500 rounded-lg text-xs font-medium cursor-not-allowed">
+                                <i class="fa-solid fa-check mr-1"></i>确认同步更新至产品与培训库
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 视图 3：销售培训与新产品学习 (Sales Training View) -->
+        <section id="view-learning" class="hidden space-y-6">
+            <div class="glass-panel p-6 rounded-2xl space-y-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-graduation-cap text-brand-gold"></i> 新产品销售培训与考评中心
+                        </h2>
+                        <p class="text-sm text-slate-400 mt-1">
+                            基于您投喂的最新 PPT 彩页自动生成。前线销售人员可在此学习技术卖点、控标对击及刷题考核。
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-slate-400">当前学习讲义：</span>
+                        <select id="courseSelect" onchange="loadCourse()" class="bg-slate-900 border border-slate-700 text-xs text-white rounded-lg px-3 py-2">
+                            <option value="NFC9197">NFC9197 LED平台灯 (50W/100W) 白皮书</option>
+                            <option value="NGC9828">NGC9828-400W 高顶灯差异化 PK</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 学习内容三大板块 -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- 板块 1：1分钟产品精讲卡片 -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+                        <div class="flex items-center justify-between text-brand-500 font-semibold text-sm border-b border-slate-800 pb-2">
+                            <span><i class="fa-solid fa-bolt mr-2"></i>1分钟电梯演讲 (Elevator Pitch)</span>
+                            <span class="text-xs text-slate-500">核心卖点</span>
+                        </div>
+                        <div id="learning-pitch" class="space-y-2 text-xs text-slate-300 leading-relaxed">
+                            <!-- 由 JS 加载 -->
+                        </div>
+                    </div>
+
+                    <!-- 板块 2：招投标控标与竞品对击卡片 -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+                        <div class="flex items-center justify-between text-brand-gold font-semibold text-sm border-b border-slate-800 pb-2">
+                            <span><i class="fa-solid fa-shield-halved mr-2"></i>招投标控标点与竞品 PK</span>
+                            <span class="text-xs text-slate-500">击败对手</span>
+                        </div>
+                        <div id="learning-pk" class="space-y-3 text-xs text-slate-300">
+                            <!-- 由 JS 加载 -->
+                        </div>
+                    </div>
+
+                    <!-- 板块 3：销售互动答题与考评 -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between text-brand-accent font-semibold text-sm border-b border-slate-800 pb-2 mb-3">
+                                <span><i class="fa-solid fa-clipboard-question mr-2"></i>前线技能模拟自测</span>
+                                <span id="quiz-score" class="text-xs font-bold text-brand-gold">得分: 0/100</span>
+                            </div>
+                            <div id="quiz-container" class="space-y-3 text-xs">
+                                <!-- 由 JS 渲染测试题 -->
+                            </div>
+                        </div>
+                        <button onclick="submitQuiz()" class="w-full py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-medium transition-colors mt-4">
+                            提交答案并查看解析
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 模态框：价格变动历史追溯 -->
+    <div id="price-history-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-xl w-full p-6 space-y-5 shadow-2xl relative">
+            <button onclick="closePriceModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div>
+                <span class="text-xs font-bold text-brand-500 uppercase tracking-wider">价格版本追溯 (Price Revision History)</span>
+                <h3 id="modal-product-title" class="text-lg font-bold text-white mt-1">NFC9197-50W 工业 LED 灯具</h3>
+                <p id="modal-product-code" class="text-xs text-slate-400">订货编码：OK-NFC9197-50W</p>
+            </div>
+
+            <!-- 当前现行价卡片 -->
+            <div class="bg-brand-500/10 border border-brand-500/30 rounded-xl p-4 flex items-center justify-between">
+                <div>
+                    <span class="text-xs text-brand-500 font-semibold block">现行官方指导价</span>
+                    <span id="modal-current-price" class="text-2xl font-bold text-brand-500">¥ 680.00</span>
+                </div>
+                <div class="text-right text-xs text-slate-400">
+                    <div>生效日期：2026-08-01</div>
+                    <div class="text-brand-500">状态：最新现行版本</div>
+                </div>
+            </div>
+
+            <!-- 历史价格版本时间轴 -->
+            <div>
+                <h4 class="text-xs font-semibold text-slate-300 mb-3"><i class="fa-solid fa-history mr-1"></i>历史变动日志（留存记录）：</h4>
+                <div id="modal-history-list" class="space-y-3 max-h-60 overflow-y-auto pr-1 custom-scrollbar">
+                    <!-- 由 JS 填充历史记录 -->
+                </div>
+            </div>
+
+            <div class="border-t border-slate-800 pt-3 flex justify-end">
+                <button onclick="closePriceModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium rounded-lg">
+                    关闭
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 云端实时数据库同步模块 -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'oceanking-hub-app';
+        let firebaseConfig = {
+            apiKey: "",
+            authDomain: "oceanking-hub.firebaseapp.com",
+            projectId: "oceanking-hub",
+            storageBucket: "oceanking-hub.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef"
+        };
+        if (typeof __firebase_config !== 'undefined') {
+            try {
+                firebaseConfig = JSON.parse(__firebase_config);
+            } catch(e) {}
+        }
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // 暴露全局保存方法：投喂更新时自动写入云端
+        window.saveToCloud = async function(productData) {
+            const user = auth.currentUser;
+            if (!user) return;
+            try {
+                // RULE 1: Strict public path
+                const productDoc = doc(db, 'artifacts', appId, 'public', 'data', 'products', productData.id);
+                await setDoc(productDoc, productData, { merge: true });
+            } catch(err) {
+                console.error("云端同步失败:", err);
+            }
+        };
+
+        // 初始化云端数据实时监听
+        async function initCloudSync() {
+            try {
+                let userCredential;
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    userCredential = await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    userCredential = await signInAnonymously(auth);
+                }
+                const user = userCredential.user;
+                if (!user) return;
+
+                // RULE 1 & RULE 2: Strict path and simple query with error callback
+                const productsCollection = collection(db, 'artifacts', appId, 'public', 'data', 'products');
+                
+                onSnapshot(productsCollection, (snapshot) => {
+                    if (!snapshot.empty) {
+                        let cloudProducts = [];
+                        snapshot.forEach((docSnap) => {
+                            cloudProducts.push(docSnap.data());
+                        });
+                        // 用云端最新数据覆盖本地内存并刷屏
+                        window.productDatabase = cloudProducts;
+                        if (typeof window.filterProducts === 'function') {
+                            window.filterProducts();
+                        }
+                    } else {
+                        // 首次部署：把默认初始数据推送至云端
+                        if (window.productDatabase && window.productDatabase.length > 0) {
+                            window.productDatabase.forEach(p => {
+                                window.saveToCloud(p);
+                            });
+                        }
+                    }
+                }, (error) => {
+                    console.error("云端数据监听异常:", error);
+                });
+            } catch (err) {
+                console.error("云端鉴权失败:", err);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initCloudSync();
+        });
+    </script>
+
+    <!-- JS 逻辑控制 -->
+    <script>
+        // 初始数据库 (模拟真实海洋王产品数据)
+        let productDatabase = [
+            {
+                id: "nfc9197-50w",
+                name: "海洋王 NFC9197-50W LED 平台灯",
+                code: "OK-NFC9197-50W",
+                category: "平台灯",
+                wattage: "50W",
+                efficacy: "175 lm/W (玻璃款)",
+                protection: "IP66 / WF2",
+                weight: "1.5 kg",
+                currentPrice: 680,
+                lastUpdated: "2026-08-01",
+                priceHistory: [
+                    { date: "2026-08-01", price: 680, reason: "三季度最新降本调价，配合大规模推广" },
+                    { date: "2025-10-15", price: 750, reason: "新品上市初始官方订货价" }
+                ],
+                features: ["专利防水透气呼吸阀", "175lm/W超高光效", "侧壁/吊杆安装", "原生PLC/微波调光"],
+                pkPoint: "光效高出竞品30%以上，重量仅1.5kg（竞品的1/3），带有专利呼吸阀防吸潮死灯"
+            },
+            {
+                id: "nfc9197-100w",
+                name: "海洋王 NFC9197-100W LED 平台灯",
+                code: "OK-NFC9197-100W",
+                category: "平台灯",
+                wattage: "100W",
+                efficacy: "180 lm/W (玻璃款)",
+                protection: "IP66 / WF2",
+                weight: "2.1 kg",
+                currentPrice: 1280,
+                lastUpdated: "2026-08-01",
+                priceHistory: [
+                    { date: "2026-08-01", price: 1280, reason: "三季度最新降本调价" },
+                    { date: "2025-10-15", price: 1380, reason: "初始官方订货价" }
+                ],
+                features: ["专利呼吸阀", "180lm/W极致光效", "侧壁/吊杆/40°投光", "PLC/0-10V"],
+                pkPoint: "100W实现18000+ lm光通量，IP66防水且呼吸阀平衡气压，绝不吸潮"
+            },
+            {
+                id: "ngc9828-400w",
+                name: "海洋王 NGC9828-400W 工业 LED 高顶灯",
+                code: "OK-NGC9828-400W",
+                category: "高顶灯",
+                wattage: "400W",
+                efficacy: "145 lm/W",
+                protection: "IP66 / WF2",
+                weight: "6.9 kg",
+                currentPrice: 3220,
+                lastUpdated: "2026-05-10",
+                priceHistory: [
+                    { date: "2026-05-10", price: 3220, reason: "大功率工业高顶灯标准现行价" }
+                ],
+                features: ["58000 lm超高光通量", "通透镂空对流散热", "CREE 3030光源", "高压精铸铝"],
+                pkPoint: "光通量为飞利浦BY698P(200W)的2.1倍，重量反而减轻1.6kg，耐抗震螺钉不脱落"
+            },
+            {
+                id: "ngc9826h-210w",
+                name: "海洋王 NGC9826H-210W PLC 智能高顶灯",
+                code: "OK-NGC9826H-210W-PLC",
+                category: "高顶灯",
+                wattage: "210W",
+                efficacy: "150 lm/W",
+                protection: "IP65 / WF2",
+                weight: "5.2 kg",
+                currentPrice: 3220,
+                lastUpdated: "2026-07-20",
+                priceHistory: [
+                    { date: "2026-07-20", price: 3220, reason: "PLC中/宽配光耐高温款" },
+                    { date: "2026-01-10", price: 3350, reason: "旧版订货指导价" }
+                ],
+                features: ["PLC电力线载波调光", "耐高温工业驱动", "恒照度补充", "智能配电箱联动"],
+                pkPoint: "免铺信号线，直接利用现有电力线实现单灯寻址与0-100%自动调光"
+            },
+            {
+                id: "nfc9191-36w",
+                name: "海洋王 NFC9191LED 36W AI 智能吸顶灯",
+                code: "OK-NFC9191-36W-AI",
+                category: "吸顶灯",
+                wattage: "36W",
+                efficacy: "130 lm/W",
+                protection: "IP65",
+                weight: "1.2 kg",
+                currentPrice: 420,
+                lastUpdated: "2026-04-12",
+                priceHistory: [
+                    { date: "2026-04-12", price: 420, reason: "楼道/通道 AI 款推广统一价" }
+                ],
+                features: ["全时AI语音控制", "冷暖色温无级切换", "微波人感联动", "楼道/通道专用"],
+                pkPoint: "无需额外开关与面板，离线语音指令即刻响应，人来亮灯人走微亮"
+            }
+        ];
+
+        // 全局动态暂存
+        let tempParsedData = null;
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            renderProductGrid(productDatabase);
+            loadCourse();
+        });
+
+        // 视图切换
+        function switchTab(tab) {
+            ['catalog', 'ingest', 'learning'].forEach(t => {
+                document.getElementById(`view-${t}`).classList.add('hidden');
+                const btn = document.getElementById(`tab-btn-${t}`);
+                btn.classList.remove('bg-brand-600', 'text-white', 'shadow-md');
+                btn.classList.add('text-slate-400');
+            });
+
+            document.getElementById(`view-${tab}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-btn-${tab}`);
+            activeBtn.classList.add('bg-brand-600', 'text-white', 'shadow-md');
+            activeBtn.classList.remove('text-slate-400');
+        }
+
+        // 渲染产品网格
+        function renderProductGrid(products) {
+            const grid = document.getElementById('product-grid');
+            document.getElementById('product-count').textContent = products.length;
+
+            if (products.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-16 bg-slate-900/50 rounded-2xl border border-slate-800">
+                        <i class="fa-solid fa-magnifying-glass-minus text-4xl text-slate-600 mb-3"></i>
+                        <h3 class="text-slate-300 font-semibold text-base">未找到匹配的产品或编码</h3>
+                        <p class="text-xs text-slate-500 mt-1">请尝试更换关键字或重置筛选条件</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = products.map(p => `
+                <div class="bg-slate-900/90 border border-slate-800 hover:border-brand-500/50 rounded-2xl p-5 space-y-4 transition-all hover:shadow-xl hover:shadow-brand-500/5 group flex flex-col justify-between">
+                    <div class="space-y-3">
+                        <div class="flex items-start justify-between gap-2">
+                            <span class="px-2.5 py-1 rounded-md text-[10px] font-bold bg-brand-500/10 text-brand-500 border border-brand-500/20">
+                                ${p.category}
+                            </span>
+                            <span class="text-xs font-mono text-slate-400 bg-slate-800 px-2 py-0.5 rounded">
+                                ${p.code}
+                            </span>
+                        </div>
+
+                        <div>
+                            <h3 class="font-bold text-white text-base group-hover:text-brand-500 transition-colors line-clamp-1">${p.name}</h3>
+                            <p class="text-xs text-slate-400 mt-1 flex items-center gap-3">
+                                <span><i class="fa-solid fa-bolt text-brand-gold mr-1"></i>${p.wattage}</span>
+                                <span><i class="fa-solid fa-sun text-slate-400 mr-1"></i>${p.efficacy}</span>
+                                <span><i class="fa-solid fa-shield mr-1"></i>${p.protection}</span>
+                            </p>
+                        </div>
+
+                        <!-- 卖点标签 -->
+                        <div class="flex flex-wrap gap-1.5 pt-1">
+                            ${p.features.map(f => `<span class="text-[10px] px-2 py-0.5 rounded bg-slate-800/80 text-slate-300 border border-slate-700/60">${f}</span>`).join('')}
+                        </div>
+                    </div>
+
+                    <div class="border-t border-slate-800/80 pt-4 flex items-center justify-between mt-2">
+                        <div>
+                            <span class="text-[10px] text-slate-400 block">现行订货参考价</span>
+                            <span class="text-xl font-bold text-brand-gold">¥ ${p.currentPrice.toLocaleString()}</span>
+                        </div>
+                        <button onclick="openPriceModal('${p.id}')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg transition-colors border border-slate-700 flex items-center gap-1.5">
+                            <i class="fa-solid fa-clock-rotate-left text-brand-gold"></i>历史变动 (${p.priceHistory.length})
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 模糊搜索与过滤
+        function filterProducts() {
+            const query = document.getElementById('searchInput').value.trim().toLowerCase();
+            const category = document.getElementById('categoryFilter').value;
+
+            const filtered = productDatabase.filter(p => {
+                const matchCategory = (category === 'ALL' || p.category === category);
+                const matchQuery = !query || 
+                    p.name.toLowerCase().includes(query) ||
+                    p.code.toLowerCase().includes(query) ||
+                    p.wattage.toLowerCase().includes(query) ||
+                    p.protection.toLowerCase().includes(query) ||
+                    p.features.some(f => f.toLowerCase().includes(query)) ||
+                    p.pkPoint.toLowerCase().includes(query);
+
+                return matchCategory && matchQuery;
+            });
+
+            renderProductGrid(filtered);
+        }
+
+        function quickSearch(tag) {
+            document.getElementById('searchInput').value = tag;
+            filterProducts();
+        }
+
+        function resetSearch() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('categoryFilter').value = 'ALL';
+            filterProducts();
+        }
+
+        // 模态框逻辑：查看价格历史
+        function openPriceModal(productId) {
+            const product = productDatabase.find(p => p.id === productId);
+            if (!product) return;
+
+            document.getElementById('modal-product-title').textContent = product.name;
+            document.getElementById('modal-product-code').textContent = `订货编码：${product.code} | 分类：${product.category}`;
+            document.getElementById('modal-current-price').textContent = `¥ ${product.currentPrice.toLocaleString()}.00`;
+
+            const historyContainer = document.getElementById('modal-history-list');
+            historyContainer.innerHTML = product.priceHistory.map((h, index) => `
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800/80 flex items-start justify-between text-xs">
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-white">¥ ${h.price.toLocaleString()}</span>
+                            ${index === 0 ? '<span class="px-1.5 py-0.5 rounded text-[10px] bg-brand-500/20 text-brand-500 font-semibold">现行价</span>' : '<span class="px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400">历史版本</span>'}
+                        </div>
+                        <p class="text-slate-400 text-[11px]">${h.reason}</p>
+                    </div>
+                    <span class="text-slate-500 text-[11px]">${h.date}</span>
+                </div>
+            `).join('');
+
+            document.getElementById('price-history-modal').classList.remove('hidden');
+        }
+
+        function closePriceModal() {
+            document.getElementById('price-history-modal').classList.add('hidden');
+        }
+
+        // 模拟文件选择与 AI 解析
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                document.getElementById('file-name-display').textContent = `已选择文件：${file.name} (${(file.size/1024).toFixed(1)} KB)`;
+                document.getElementById('file-name-display').classList.remove('hidden');
+            }
+        }
+
+        function simulateAIParsing() {
+            const btn = document.getElementById('btn-parse-ai');
+            const textInput = document.getElementById('ingest-text-input').value;
+            
+            btn.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin"></i> Gemini AI 正读取彩页提取核心参数...`;
+            btn.disabled = true;
+
+            setTimeout(() => {
+                btn.innerHTML = `<i class="fa-solid fa-bolt"></i> 开始 AI 智能解析与提炼`;
+                btn.disabled = false;
+
+                // 模拟解析生成的数据 (可更新已有的 NFC9197-50W)
+                tempParsedData = {
+                    id: "nfc9197-50w",
+                    name: "海洋王 NFC9197-50W LED 平台灯 (2026最新款)",
+                    code: "OK-NFC9197-50W",
+                    category: "平台灯",
+                    wattage: "50W",
+                    efficacy: "175 lm/W (玻璃款)",
+                    protection: "IP66 / WF2",
+                    newPrice: 620, // 降价更新
+                    oldPrice: 680,
+                    updateDate: "2026-08-06",
+                    updateReason: "官网彩页更新：全线提效降本，促销特惠",
+                    features: ["专利防水透气呼吸阀", "175lm/W超高光效", "侧壁/吊杆安装", "微波/PLC双模智控"],
+                    pkPoint: "光效升至175lm/W，单灯价格由680降至620元，控标优势进一步扩大！"
+                };
+
+                // 渲染结果
+                const outputBox = document.getElementById('ai-output-box');
+                document.getElementById('ai-status-tag').textContent = "解析成功 (已识别结构化参数)";
+                document.getElementById('ai-status-tag').className = "text-xs px-2 py-0.5 rounded bg-brand-500/20 text-brand-500 font-semibold";
+
+                outputBox.innerHTML = `
+                    <div class="bg-slate-950 p-3 rounded-xl border border-brand-500/30 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-white">${tempParsedData.name}</span>
+                            <span class="text-brand-gold font-bold text-sm">拟更新价格: ¥ ${tempParsedData.newPrice} <span class="line-through text-slate-500 text-xs">(旧价: ¥${tempParsedData.oldPrice})</span></span>
+                        </div>
+                        <div class="text-[11px] text-slate-400">订货编码：${tempParsedData.code} | 光效：${tempParsedData.efficacy} | 防护：${tempParsedData.protection}</div>
+                        <div class="text-[11px] text-brand-500">变更原由：${tempParsedData.updateReason}</div>
+                        <div class="border-t border-slate-800 pt-2 text-[11px] text-slate-300">
+                            <strong>AI 提炼销售PK卡片：</strong> ${tempParsedData.pkPoint}
+                        </div>
+                    </div>
+                `;
+
+                const saveBtn = document.getElementById('btn-save-ingest');
+                saveBtn.disabled = false;
+                saveBtn.className = "px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-medium cursor-pointer shadow-md";
+            }, 1200);
+        }
+
+        function saveIngestedData() {
+            if (!tempParsedData) return;
+
+            const existingIndex = productDatabase.findIndex(p => p.id === tempParsedData.id);
+            let updatedProduct = null;
+
+            if (existingIndex !== -1) {
+                // 更新现有产品并插入历史记录
+                const target = productDatabase[existingIndex];
+                target.priceHistory.unshift({
+                    date: tempParsedData.updateDate,
+                    price: tempParsedData.newPrice,
+                    reason: tempParsedData.updateReason
+                });
+                target.currentPrice = tempParsedData.newPrice;
+                target.lastUpdated = tempParsedData.updateDate;
+                target.pkPoint = tempParsedData.pkPoint;
+                updatedProduct = target;
+            } else {
+                // 新建产品
+                updatedProduct = {
+                    id: tempParsedData.id,
+                    name: tempParsedData.name,
+                    code: tempParsedData.code,
+                    category: tempParsedData.category,
+                    wattage: tempParsedData.wattage,
+                    efficacy: tempParsedData.efficacy,
+                    protection: tempParsedData.protection,
+                    weight: "1.5 kg",
+                    currentPrice: tempParsedData.newPrice,
+                    lastUpdated: tempParsedData.updateDate,
+                    priceHistory: [{
+                        date: tempParsedData.updateDate,
+                        price: tempParsedData.newPrice,
+                        reason: tempParsedData.updateReason
+                    }],
+                    features: tempParsedData.features,
+                    pkPoint: tempParsedData.pkPoint
+                };
+                productDatabase.push(updatedProduct);
+            }
+
+            // 【关键】同步写入云端数据库，确保所有其他用户实时可见！
+            if (typeof window.saveToCloud === 'function' && updatedProduct) {
+                window.saveToCloud(updatedProduct);
+            }
+
+            alert("✅ 知识库与价格日志已同步更新至云端！所有销售人员登录即可获取最新内容。");
+            tempParsedData = null;
+            
+            // 重置投喂界面
+            document.getElementById('btn-save-ingest').disabled = true;
+            document.getElementById('btn-save-ingest').className = "px-4 py-2 bg-slate-800 text-slate-500 rounded-lg text-xs font-medium cursor-not-allowed";
+            document.getElementById('ai-output-box').innerHTML = `<div class="text-center py-12 text-slate-600"><i class="fa-regular fa-lightbulb text-3xl mb-2 block"></i>更新完成！产品库与价格追溯表已刷新。</div>`;
+            
+            filterProducts();
+            switchTab('catalog');
+        }
+
+        // 销售学习中心逻辑
+        function loadCourse() {
+            const course = document.getElementById('courseSelect').value;
+            const pitchBox = document.getElementById('learning-pitch');
+            const pkBox = document.getElementById('learning-pk');
+            const quizContainer = document.getElementById('quiz-container');
+
+            if (course === 'NFC9197') {
+                pitchBox.innerHTML = `
+                    <p>“张工/李总您好，我们海洋王最新推出的 <strong>NFC9197 LED平台灯</strong>，专为咱橡塑、炼钢等重工业复杂环境打造：”</p>
+                    <p class="text-brand-500">1. <strong>用电减半照度翻倍</strong>：光效高达 175-180 lm/W，用 50W 就能轻松替换传统 100W~150W 高耗能灯

@@ -13,6 +13,8 @@
     <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';</script>
     <!-- 引入 Word(docx) 解析库 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <!-- 引入 PPTX 解析库 (解压引擎) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
     <script>
         tailwind.config = {
@@ -112,19 +114,19 @@
             <div class="glass-panel p-6 rounded-2xl space-y-6">
                 <div>
                     <h2 class="text-xl font-bold text-white flex items-center gap-2"><i class="fa-solid fa-wand-magic-sparkles text-brand-gold"></i> 文档智能解析与题库大裂变</h2>
-                    <p class="text-sm text-slate-400 mt-1">支持直接拖拽 PDF、Word、TXT 文件！AI 将自动提取内容，生成产品档案并裂变出 5 道实战不重复考题。</p>
+                    <p class="text-sm text-slate-400 mt-1">支持直接拖拽 PDF、Word、PPTX 或 TXT 文件！AI 将自动读取内容，生成产品档案并裂变出 5 道实战不重复考题。</p>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div class="space-y-4">
                         <!-- 隐藏的 file input，支持点击上传 -->
-                        <input type="file" id="file-upload" class="hidden" accept=".pdf,.doc,.docx,.txt" onchange="handleFileSelect(event)">
+                        <input type="file" id="file-upload" class="hidden" accept=".pdf,.doc,.docx,.pptx,.txt" onchange="handleFileSelect(event)">
                         
                         <!-- 交互式拖拽区 -->
                         <div id="drop-zone" onclick="triggerFileInput()" class="border-2 border-dashed border-slate-700 hover:border-brand-500 bg-slate-900/50 hover:bg-brand-500/10 rounded-2xl p-6 flex flex-col items-center justify-center text-center transition-all relative group h-36 cursor-pointer" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
-                            <i class="fa-solid fa-file-pdf text-3xl text-slate-500 group-hover:text-brand-500 mb-2 transition-colors"></i>
-                            <h3 class="text-sm font-bold text-slate-200" id="file-name-display">拖拽或点击上传文件 (PDF / Word / TXT)</h3>
-                            <p class="text-[10px] text-brand-gold mt-2 bg-brand-gold/10 px-2 py-1 rounded">✨ 升级版：系统将自动读取文件内容！</p>
+                            <i class="fa-solid fa-file-powerpoint text-3xl text-slate-500 group-hover:text-brand-500 mb-2 transition-colors"></i>
+                            <h3 class="text-sm font-bold text-slate-200" id="file-name-display">拖拽或点击上传文件 (PDF / Word / PPTX / TXT)</h3>
+                            <p class="text-[10px] text-brand-gold mt-2 bg-brand-gold/10 px-2 py-1 rounded">✨ 满血版：系统将在本地极速读取内部长文稿！</p>
                         </div>
                         
                         <!-- 文本输入区 -->
@@ -148,7 +150,7 @@
                         </div>
                         <div id="ai-output-box" class="flex-1 space-y-3 text-xs text-slate-400 overflow-y-auto max-h-[400px] custom-scrollbar pr-2 relative">
                             <div class="flex flex-col items-center justify-center h-full text-slate-600 py-12">
-                                <i class="fa-regular fa-file-word text-4xl mb-3"></i>
+                                <i class="fa-solid fa-file-pdf text-4xl mb-3"></i>
                                 <span class="text-center px-4">拖入文档并点击解析，AI将在此展示<br>产品档案及 5 道实战考题。</span>
                             </div>
                         </div>
@@ -344,7 +346,7 @@
             }).catch((error) => {
                 console.error("Firebase 鉴权失败:", error);
                 updateCloudUI("权限验证失败", "red-500", "red-500");
-                window.showToast("云端权限未开启，数据仅保存在本地！", "warning");
+                window.showToast("请在 Firebase Authentication 中开启【匿名登录】", "error");
             });
 
         } catch (err) {
@@ -377,9 +379,9 @@
                 features: ["独创专利防水透气呼吸阀", "175lm/W极高光效", "1.5kg超轻量化单手挂装", "原生支持PLC/0-10V智能调光"], 
                 pkPoint: "彻底解决热胀冷缩吸潮导致死灯痛点，光效高出竞品30%以上。",
                 quizQuestions: [
-                    { question: "NFC9197 解决工业吸潮死灯痛点的核心关键结构是？", options: ["专利防水透气呼吸阀", "加厚外壳橡胶密封圈", "内置干燥剂包"], answer: 0 },
-                    { question: "50W 玻璃款的最高整灯光效大约是多少？", options: ["120 lm/W", "175 lm/W", "100 lm/W"], answer: 1 },
-                    { question: "该灯具实现高空轻松安装，其重量大约是？", options: ["3.5 kg", "1.5 kg", "5.0 kg"], answer: 1 }
+                    { question: "NFC9197 解决工业吸潮死灯痛点的核心关键结构是？", options: ["专利防水透气呼吸阀", "加厚外壳橡胶密封圈", "内置干燥剂包", "双层玻璃罩"], answer: 0 },
+                    { question: "50W 玻璃款的最高整灯光效大约是多少？", options: ["120 lm/W", "175 lm/W", "100 lm/W", "140 lm/W"], answer: 1 },
+                    { question: "该灯具实现高空轻松安装，其重量大约是？", options: ["3.5 kg", "1.5 kg", "5.0 kg", "2.8 kg"], answer: 1 }
                 ]
             }
         ];
@@ -408,8 +410,8 @@
             if(activeMBtn) activeMBtn.classList.add('text-brand-500'), activeMBtn.classList.remove('text-slate-500');
         };
 
-        // --- STREAMING_CHUNK:Product Rendering (No Price) ---
-        // --- 4. 渲染纯技术产品卡片 ---
+        // --- STREAMING_CHUNK:Rendering Catalog and Filter logic... ---
+        // --- 4. 渲染纯技术产品卡片 (无价格) ---
         window.renderProductGrid = function(products) {
             const grid = document.getElementById('product-grid');
             document.getElementById('product-count').textContent = products.length;
@@ -498,7 +500,7 @@
             setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); }, 300);
         };
 
-        // --- STREAMING_CHUNK:File Parsing (PDF/Word/TXT) and AI Prompt ---
+        // --- STREAMING_CHUNK:Implementing File Drag, Drop and Browser Document Parsing... ---
         // --- 6. 文件读取与真实 Gemini AI 接口解析 ---
         window.handleDragOver = function(event) { event.preventDefault(); event.stopPropagation(); document.getElementById('drop-zone').classList.add('border-brand-500', 'bg-brand-500/10'); };
         window.handleDragLeave = function(event) { event.preventDefault(); event.stopPropagation(); document.getElementById('drop-zone').classList.remove('border-brand-500', 'bg-brand-500/10'); };
@@ -513,7 +515,7 @@
             if(file) await readFile(file);
         };
 
-        // 核心：读取文件内容 (PDF / Word / TXT)
+        // 核心：在浏览器本地直接读取文件内容 (PDF / Word / PPTX / TXT)
         async function readFile(file) {
             dragFileName = file.name;
             const displayEl = document.getElementById('file-name-display');
@@ -544,12 +546,30 @@
                     const result = await mammoth.extractRawText({arrayBuffer: arrayBuffer});
                     extractedText = result.value;
                 } 
+                else if (fileExt === 'pptx') {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const zip = await JSZip.loadAsync(arrayBuffer);
+                    let slideTexts = [];
+                    // 找出 PPT 压缩包内所有的幻灯片 XML 文件
+                    const slideFiles = Object.keys(zip.files).filter(name => /^ppt\/slides\/slide\d+\.xml$/.test(name));
+                    // 按照幻灯片 1, 2, 3... 的顺序排序
+                    slideFiles.sort((a, b) => parseInt(a.match(/\d+/)[0]) - parseInt(b.match(/\d+/)[0]));
+                    
+                    for (const fileName of slideFiles) {
+                        const xmlContent = await zip.file(fileName).async("string");
+                        // 使用正则提取 XML 中所有 <a:t> 文本节点里的真实文字
+                        const textMatches = xmlContent.match(/<a:t[^>]*>.*?<\/a:t>/g) || [];
+                        const slideText = textMatches.map(tag => tag.replace(/<[^>]+>/g, '')).join(' ');
+                        if (slideText.trim()) slideTexts.push(slideText);
+                    }
+                    extractedText = slideTexts.join('\n\n');
+                } 
                 else {
-                    throw new Error("暂不支持该文件格式，请上传 PDF、Word(docx) 或 TXT 文件。");
+                    throw new Error("暂不支持该文件格式，请上传 PDF、Word(docx)、PPTX 或 TXT 文件。");
                 }
 
                 if (!extractedText || extractedText.trim() === "") {
-                     throw new Error("未能从文件中读取到文字，可能是纯图片扫描版 PDF。建议您手动复制核心文字粘贴到文本框。");
+                     throw new Error("未能从文件中读取到文字，可能是纯图片扫描版。建议您手动复制核心文字粘贴到文本框。");
                 }
 
                 textArea.value = extractedText.trim();
@@ -566,6 +586,7 @@
             }
         }
 
+        // --- STREAMING_CHUNK:Implementing Gemini AI Parsing Logic... ---
         window.startAIParsing = async function() {
             const textContent = document.getElementById('ingest-text-input').value.trim();
             if(!textContent) {
@@ -589,7 +610,7 @@
                 const parsedResult = await callGeminiAPI(textContent, dragFileName);
                 if(!parsedResult || !parsedResult.name) throw new Error("解析格式错误");
 
-                // 智能同名判断
+                // 智能同名判断覆盖
                 let isExisting = false;
                 let finalId = "ai-product-" + Date.now();
                 let productCode = parsedResult.code || `OK-${parsedResult.name.split(' ')[0]}`;
@@ -652,8 +673,8 @@
             }
         };
 
+        // --- 强化出题 Prompt，强制5题不重复并分维度 ---
         async function callGeminiAPI(text, fileName) {
-            // 强化出题 Prompt，强制5题不重复
             const promptText = `你是海洋王工业照明领域的资深技术支持与培训出题专家。请根据以下输入（包含文件名和文本段落），提炼该灯具产品的核心信息，并**自动生成用于销售培训的实战单选题**。
 
 输入信息：
@@ -661,7 +682,7 @@
 文本内容：${text || '无'}
 
 处理要求：
-1. 提取或推断：产品名称、产品订货编码（若无则为空）、分类（平台灯/高顶灯/防爆灯等）、功率、光效、防护/防腐等级、重量。
+1. 提取或推断：产品名称、产品订货编码（若无则推测）、分类（平台灯/高顶灯/防爆灯等）、功率、光效、防护/防腐等级、重量。
 2. 提炼：3-5 条核心优势亮点（features）和 1 条针对竞品的打法或控标点（pkPoint）。
 3. 智能出题（★绝对禁止重复★）：请**固定生成 5 道完全不同维度**的单项选择题。
    - 必须严格涵盖以下不同维度：① 核心参数数值记忆、② 独特结构优势（如散热/防潮设计）、③ 竞品劣势打击/控标点、④ 目标应用场景（如炼钢/皮带通廊）。
@@ -671,7 +692,7 @@
 {
   "name": "产品名", "code": "订货编码", "category": "分类", "wattage": "功率", "efficacy": "光效", "protection": "防护等级", "weight": "重量",
   "features": ["特点1", "特点2"], "pkPoint": "控标点",
-  "questions": [ { "question": "问题描述", "options": ["A选项", "B选项", "C选项"], "answer": 0 } ]
+  "questions": [ { "question": "问题描述", "options": ["A选项", "B选项", "C选项", "D选项"], "answer": 0 } ]
 }`;
 
             const payload = {
@@ -686,7 +707,7 @@
                             protection: { type: "STRING" }, weight: { type: "STRING" },
                             features: { type: "ARRAY", items: { type: "STRING" } },
                             pkPoint: { type: "STRING" },
-                            questions: { type: "ARRAY", items: { type: "OBJECT", properties: { question: { type: "STRING" }, options: { type: "ARRAY", items: { type: "STRING" } }, answer: { type: "INTEGER", description: "正确选项索引(0-3)" } } } }
+                            questions: { type: "ARRAY", items: { type: "OBJECT", properties: { question: { type: "STRING" }, options: { type: "ARRAY", items: { type: "STRING" } }, answer: { type: "INTEGER", description: "正确选项索引" } } } }
                         },
                         required: ["name", "features", "questions"]
                     }
@@ -706,7 +727,6 @@
                 window.saveToCloud(tempParsedData);
                 window.showToast("✅ 产品档案及题库已同步全网！", "success");
             } else {
-                // 回退到本地存储模式（如果没连上Firebase）
                 const existingIdx = window.productDatabase.findIndex(p => p.id === tempParsedData.id);
                 if (existingIdx >= 0) window.productDatabase[existingIdx] = tempParsedData;
                 else window.productDatabase.push(tempParsedData);
@@ -714,7 +734,7 @@
             }
             tempParsedData = null; dragFileName = "";
             document.getElementById('ingest-text-input').value = "";
-            document.getElementById('file-name-display').innerHTML = "拖拽或点击上传文件 (PDF / Word / TXT)";
+            document.getElementById('file-name-display').innerHTML = "拖拽或点击上传文件 (PDF / Word / PPTX / TXT)";
             const saveBtn = document.getElementById('btn-save-ingest');
             saveBtn.disabled = true;
             saveBtn.className = "px-5 py-3 bg-slate-800 text-slate-500 rounded-xl text-sm font-bold cursor-not-allowed transition-all w-full flex items-center justify-center";
@@ -724,7 +744,7 @@
             setTimeout(() => { window.switchTab('learning'); document.getElementById('courseSelect').value = 'ALL'; window.loadCourse(); }, 1500);
         };
 
-        // --- STREAMING_CHUNK:Learning Center Dynamic Quiz ---
+        // --- STREAMING_CHUNK:Dynamic Quiz and Learning Center Logic... ---
         // --- 7. 培训中心模块 (下拉菜单与随机抽题) ---
         window.updateCourseSelect = function() {
             const select = document.getElementById('courseSelect');
@@ -750,7 +770,7 @@
             if (courseId === 'ALL') {
                 let allQ = [];
                 (window.productDatabase || []).forEach(p => { if (p.quizQuestions) p.quizQuestions.forEach(q => allQ.push({ ...q, productName: p.name })); });
-                questions = allQ.sort(() => 0.5 - Math.random()).slice(0, 5);
+                questions = allQ.sort(() => 0.5 - Math.random()).slice(0, 5); // 随机抽取5题
             } else {
                 const product = (window.productDatabase || []).find(p => p.id === courseId);
                 questions = product && product.quizQuestions ? product.quizQuestions : [];

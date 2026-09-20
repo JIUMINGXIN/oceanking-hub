@@ -35,7 +35,6 @@
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col custom-scrollbar">
 
-    <!-- 顶部导航栏 -->
     <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
@@ -70,7 +69,6 @@
         </div>
     </header>
 
-    <!-- 主要工作区 -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
         <!-- 视图 1：价格与编码模糊速查 -->
@@ -118,35 +116,49 @@
         <section id="view-ingest" class="hidden space-y-6">
             <div class="glass-panel p-6 rounded-2xl space-y-6">
                 <div>
-                    <h2 class="text-xl font-bold text-white flex items-center gap-2"><i class="fa-solid fa-wand-magic-sparkles text-brand-gold"></i> AI 智能投喂与产品库更新</h2>
-                    <p class="text-sm text-slate-400 mt-1">粘贴官网最新彩页文本或价格变动通知，AI 将自动解析参数、价格并生成实战考题。</p>
+                    <h2 class="text-xl font-bold text-white flex items-center gap-2"><i class="fa-solid fa-wand-magic-sparkles text-brand-gold"></i> AI 智能投喂与培训题库裂变</h2>
+                    <p class="text-sm text-slate-400 mt-1">支持拖拽 PDF、PPT、Word 等文档。AI 将自动解析参数、同步最新价格，并自动生成 15 道实战考题。</p>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-medium text-slate-400 mb-1">请粘贴官网更新文本/新产品彩页：</label>
-                            <textarea id="ingest-text-input" rows="10" placeholder="在此粘贴...&#10;例如：NFC9197-50W 原指导价680元，自今日起调整为620元，光效升级至175lm/W。新增防吸潮专利呼吸阀，重量降低至1.5kg..." class="w-full p-3 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-brand-500 placeholder-slate-600 custom-scrollbar"></textarea>
+                        <!-- 文件拖拽区 -->
+                        <div id="drop-zone" class="border-2 border-dashed border-slate-700 hover:border-brand-500 bg-slate-900/50 hover:bg-brand-500/10 rounded-2xl p-8 flex flex-col items-center justify-center text-center transition-all cursor-pointer relative group h-48" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" onclick="document.getElementById('file-upload').click()">
+                            <input type="file" id="file-upload" class="hidden" onchange="handleFileChange(event)" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt">
+                            <i class="fa-solid fa-cloud-arrow-up text-4xl text-slate-500 group-hover:text-brand-500 mb-4 transition-colors"></i>
+                            <h3 class="text-sm font-bold text-slate-200 mb-1">点击或将产品文档拖拽至此处</h3>
+                            <p class="text-xs text-slate-500">支持 PDF, Word, PPT 或 TXT 彩页资料</p>
                         </div>
-                        <button onclick="simulateAIParsing()" id="btn-parse-ai" class="w-full py-3 bg-gradient-to-r from-brand-600 to-brand-accent hover:from-brand-500 hover:to-brand-accent text-white font-medium text-sm rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-bolt"></i> 开始 AI 智能解析与提取题库
+                        
+                        <div class="relative flex items-center py-2">
+                            <div class="flex-grow border-t border-slate-800"></div>
+                            <span class="flex-shrink-0 mx-4 text-slate-500 text-xs">或手动粘贴文稿</span>
+                            <div class="flex-grow border-t border-slate-800"></div>
+                        </div>
+
+                        <div>
+                            <textarea id="ingest-text-input" rows="4" placeholder="在此粘贴官网更新通知或部分文本片段..." class="w-full p-3 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-brand-500 placeholder-slate-600 custom-scrollbar"></textarea>
+                        </div>
+                        <button onclick="simulateAIParsing('手工输入文本')" id="btn-parse-ai" class="w-full py-3 bg-gradient-to-r from-brand-600 to-brand-accent hover:from-brand-500 hover:to-brand-accent text-white font-medium text-sm rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-bolt"></i> 开始 AI 智能解析提取
                         </button>
                     </div>
 
+                    <!-- AI 提取结果与同步区 -->
                     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col">
                         <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
-                            <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2"><i class="fa-solid fa-microchip text-brand-500"></i> AI 提炼预览</h3>
+                            <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2"><i class="fa-solid fa-microchip text-brand-500"></i> AI 解析与题库裂变预览</h3>
                             <span id="ai-status-tag" class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">等待投喂数据...</span>
                         </div>
-                        <div id="ai-output-box" class="flex-1 space-y-3 text-xs text-slate-400">
+                        <div id="ai-output-box" class="flex-1 space-y-3 text-xs text-slate-400 overflow-y-auto max-h-[300px] custom-scrollbar pr-2">
                             <div class="flex flex-col items-center justify-center h-full text-slate-600 py-12">
                                 <i class="fa-regular fa-lightbulb text-4xl mb-3"></i>
-                                <span>粘贴文本后点击左侧按钮，AI 将在此展示解析结果。</span>
+                                <span>拖入文档后，AI 将在此展示自动出题结果及参数。</span>
                             </div>
                         </div>
                         <div class="border-t border-slate-800 pt-4 mt-4 flex justify-end">
-                            <button onclick="saveIngestedData()" id="btn-save-ingest" disabled class="px-5 py-2.5 bg-slate-800 text-slate-500 rounded-xl text-sm font-bold cursor-not-allowed transition-all w-full md:w-auto">
-                                <i class="fa-solid fa-cloud-arrow-up mr-1"></i>确认同步更新至全网
+                            <button onclick="saveIngestedData()" id="btn-save-ingest" disabled class="px-5 py-3 bg-slate-800 text-slate-500 rounded-xl text-sm font-bold cursor-not-allowed transition-all w-full md:w-auto flex items-center justify-center">
+                                <i class="fa-solid fa-cloud-arrow-up mr-1"></i>确认同步覆盖至全网
                             </button>
                         </div>
                     </div>
@@ -193,8 +205,8 @@
                             <span><i class="fa-solid fa-clipboard-question mr-2"></i>实战模拟考核</span>
                             <span id="quiz-score" class="text-[10px] font-bold text-slate-500 bg-slate-800 px-2 py-0.5 rounded">未测试</span>
                         </div>
-                        <div id="quiz-container" class="flex-1 space-y-4 text-xs"></div>
-                        <button onclick="submitQuiz()" class="w-full py-2.5 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-sm font-bold shadow-md transition-colors mt-4">提交答卷</button>
+                        <div id="quiz-container" class="flex-1 space-y-4 text-xs h-[400px] overflow-y-auto pr-2 custom-scrollbar"></div>
+                        <button onclick="submitQuiz()" class="w-full py-3 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white rounded-xl text-sm font-bold shadow-md transition-colors mt-4">提交答卷并判分</button>
                     </div>
                 </div>
             </div>
@@ -258,7 +270,7 @@
         import { getFirestore, collection, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // ==========================================
-        // 您专属的 Firebase 配置参数 (已为您填好)
+        // 您专属的 Firebase 配置参数
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyBrbPGfBD7VS3XwSYD_GjFYyapx__CkuOU",
@@ -287,6 +299,7 @@
             signInAnonymously(auth).then(() => {
                 updateCloudUI("云端实时同步中", "brand-500", "brand-500");
                 
+                // 固定使用公共数据路径
                 const productsCollection = collection(db, 'artifacts', 'oceanking-hub', 'public', 'data', 'products');
 
                 // 挂载全局保存方法
@@ -313,6 +326,9 @@
                         // 用云端数据覆盖本地数组
                         window.productDatabase = cloudProducts;
                         window.filterProducts();
+                        
+                        // 更新培训中心的下拉菜单
+                        if(window.updateCourseSelect) window.updateCourseSelect();
                     } else {
                         // 如果云端是空的，把初始核心数据传上去
                         if (window.productDatabase && window.productDatabase.length > 0) {
@@ -342,8 +358,8 @@
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             
-            let icon = type === "success" ? '<i class="fa-solid fa-circle-check text-brand-500"></i>' : '<i class="fa-solid fa-circle-exclamation text-red-500"></i>';
-            let bgClass = type === "success" ? 'border-brand-500/30 bg-brand-500/10' : 'border-red-500/30 bg-red-500/10';
+            let icon = type === "success" ? '<i class="fa-solid fa-circle-check text-brand-500"></i>' : (type === "warning" ? '<i class="fa-solid fa-circle-exclamation text-brand-gold"></i>' : '<i class="fa-solid fa-circle-xmark text-red-500"></i>');
+            let bgClass = type === "success" ? 'border-brand-500/30 bg-brand-500/10' : (type === "warning" ? 'border-brand-gold/30 bg-brand-gold/10' : 'border-red-500/30 bg-red-500/10');
             
             toast.className = `toast-enter flex items-center gap-3 px-4 py-3 rounded-xl border ${bgClass} backdrop-blur-md text-white shadow-lg text-sm z-50`;
             toast.innerHTML = `${icon} <span>${message}</span>`;
@@ -356,7 +372,7 @@
             }, 3000);
         };
 
-        // --- 2. 本地基础数据库 (会被云端覆盖) ---
+        // --- 2. 本地基础数据库 (连接云端后会被覆盖) ---
         window.productDatabase = [
             {
                 id: "nfc9197-50w", name: "海洋王 NFC9197-50W LED 平台灯", code: "OK-NFC9197-50W", category: "平台灯",
@@ -366,7 +382,8 @@
                 features: ["专利防水呼吸阀", "175lm/W极高光效", "1.5kg超轻量化"], pkPoint: "光效行业顶尖，解决吸潮死灯痛点",
                 quizQuestions: [
                     { question: "NFC9197 解决吸潮的关键核心技术是？", options: ["专利防水透气呼吸阀", "加厚外壳橡胶密封圈", "内置干燥剂包"], answer: 0 },
-                    { question: "50W 玻璃款的初始光效大约是多少？", options: ["120 lm/W", "175 lm/W", "100 lm/W"], answer: 1 }
+                    { question: "50W 玻璃款的初始光效大约是多少？", options: ["120 lm/W", "175 lm/W", "100 lm/W"], answer: 1 },
+                    { question: "该灯具的重量是多少？", options: ["3.5 kg", "1.5 kg", "5.0 kg"], answer: 1 }
                 ]
             },
             {
@@ -382,7 +399,6 @@
         ];
 
         let tempParsedData = null; // 用于暂存 AI 解析结果
-        let lastDbLength = -1;     // 记录题库更新状态
 
         document.addEventListener('DOMContentLoaded', () => {
             window.updateCourseSelect();
@@ -390,6 +406,7 @@
             window.loadCourse();
         });
 
+        // --- STREAMING_CHUNK:Implementing UI Tab Switching and Rendering ---
         // --- 3. 选项卡切换 ---
         window.switchTab = function(tab) {
             ['catalog', 'ingest', 'learning'].forEach(t => {
@@ -467,11 +484,6 @@
 
         // --- 5. 搜索过滤 ---
         window.filterProducts = function() {
-            if (window.productDatabase.length !== lastDbLength) {
-                if (window.updateCourseSelect) window.updateCourseSelect();
-                lastDbLength = window.productDatabase.length;
-            }
-
             const query = document.getElementById('searchInput').value.trim().toLowerCase();
             const category = document.getElementById('categoryFilter').value;
 
@@ -500,6 +512,7 @@
             window.filterProducts();
         };
 
+        // --- STREAMING_CHUNK:Adding Price History Modal Logic ---
         // --- 6. 价格追溯模态框 ---
         window.openPriceModal = function(productId) {
             const product = window.productDatabase.find(p => p.id === productId);
@@ -545,75 +558,139 @@
             }, 300);
         };
 
-        // --- 7. AI 投喂解析核心逻辑 (支持生成题库) ---
-        window.simulateAIParsing = function() {
-            const btn = document.getElementById('btn-parse-ai');
-            const txt = document.getElementById('ingest-text-input').value;
-            
-            if(!txt.trim()) { 
-                window.showToast("请先在上方输入框粘贴 PDF/Word 文稿内容！", "error"); 
-                return; 
-            }
-            
-            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> AI 深度提炼参数与生成题库中...`;
-            btn.disabled = true;
+        // --- STREAMING_CHUNK:Implementing File Drag-and-Drop and AI Parsing ---
+        // --- 7. AI 投喂解析核心逻辑 (支持拖拽生成题库) ---
+        window.handleFileChange = function(event) {
+            const file = event.target.files[0];
+            if(file) processFile(file);
+        };
+        
+        window.handleDrop = function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            document.getElementById('drop-zone').classList.remove('border-brand-500', 'bg-brand-500/10');
+            const file = event.dataTransfer.files[0];
+            if(file) processFile(file);
+        };
+        
+        window.handleDragOver = function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            document.getElementById('drop-zone').classList.add('border-brand-500', 'bg-brand-500/10');
+        };
+        
+        window.handleDragLeave = function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            document.getElementById('drop-zone').classList.remove('border-brand-500', 'bg-brand-500/10');
+        };
 
-            setTimeout(() => {
-                btn.innerHTML = `<i class="fa-solid fa-bolt"></i> 开始 AI 智能解析与提取题库`;
-                btn.disabled = false;
-
-                let today = new Date().toISOString().split('T')[0];
-                tempParsedData = {
-                    id: "nfc9197-50w",
-                    name: "海洋王 NFC9197-50W LED 平台灯 (180lm/W 升级版)",
-                    code: "OK-NFC9197-50W",
-                    category: "平台灯", wattage: "50W", efficacy: "180 lm/W (玻璃高配)",
-                    protection: "IP66 / WF2", weight: "1.5 kg",
-                    newPrice: 620, updateDate: today,
-                    updateReason: "基于最新上传文档：参数升级及降本调价",
-                    features: ["专利呼吸阀", "180lm/W极致光效", "侧壁吊杆双用"],
-                    pkPoint: "光效行业顶尖，彻底解决吸潮死灯",
-                    quizQuestions: [
-                        { question: "根据最新文档，全新升级版的 NFC9197-50W 平台灯，最高光效提升到了多少？", options: ["130 lm/W", "150 lm/W", "180 lm/W"], answer: 2 },
-                        { question: "该灯具解决重工业环境下“吸潮死灯”问题的关键设计是？", options: ["加厚硅胶密封圈", "专利防水透气呼吸阀", "增加内部干燥剂"], answer: 1 },
-                        { question: "相比竞品，NFC9197 在施工安装上的核心优势体现在？", options: ["重量仅 1.5kg，单手挂装", "赠送各种安装支架", "自带超长电源线"], answer: 0 }
-                    ]
-                };
-
-                document.getElementById('ai-status-tag').textContent = "提取成功";
-                document.getElementById('ai-status-tag').className = "text-xs px-2 py-0.5 rounded bg-brand-500/20 text-brand-500 font-bold border border-brand-500/30";
-                
-                document.getElementById('ai-output-box').innerHTML = `
-                    <div class="bg-slate-950 p-4 rounded-xl border border-brand-500/40 space-y-3 relative overflow-hidden">
-                        <div class="absolute top-0 right-0 w-16 h-16 bg-brand-500/10 rounded-bl-full -mr-2 -mt-2"></div>
-                        <div class="flex justify-between items-start">
-                            <span class="font-bold text-white text-sm max-w-[80%]">${tempParsedData.name}</span>
-                            <span class="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded flex items-center gap-1"><i class="fa-solid fa-file-word"></i> 已提炼</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <div class="bg-slate-900 px-3 py-2 rounded-lg border border-slate-800">
-                                <span class="text-[10px] text-slate-500 block mb-0.5">最新指导价</span>
-                                <span class="text-brand-gold font-bold text-lg font-mono">¥ ${tempParsedData.newPrice}</span>
-                            </div>
-                            <div class="bg-slate-900 px-3 py-2 rounded-lg border border-slate-800 flex-1">
-                                <span class="text-[10px] text-slate-500 block mb-0.5">识别到的核心升级</span>
-                                <span class="text-brand-500 font-bold text-xs">${tempParsedData.efficacy}</span>
-                            </div>
-                        </div>
-                        <div class="text-[11px] text-slate-300 bg-slate-800/50 p-2.5 rounded-lg border-l-2 border-brand-accent">
-                            <i class="fa-solid fa-graduation-cap text-brand-accent mr-1"></i><strong>题库生成：</strong> 已成功提取 3 道专属实战考核题，将同步至培训中心。
-                        </div>
+        window.processFile = function(file) {
+            // UI 读取反馈与进度条
+            document.getElementById('ai-status-tag').textContent = "正在深度读取文件...";
+            document.getElementById('ai-status-tag').className = "text-xs px-2 py-0.5 rounded bg-brand-gold/20 text-brand-gold font-bold border border-brand-gold/30 animate-pulse";
+            document.getElementById('ai-output-box').innerHTML = `
+                <div class="flex flex-col items-center justify-center h-full text-slate-400 py-10 space-y-4">
+                    <i class="fa-solid fa-file-lines text-4xl text-slate-500"></i>
+                    <p class="font-bold text-white text-sm break-all text-center px-4">${file.name}</p>
+                    <p class="text-xs">文件大小: ${(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                    <div class="w-full max-w-[200px] h-1.5 bg-slate-800 rounded-full overflow-hidden mt-2">
+                        <div class="h-full bg-brand-500 w-1/2 animate-[pulse_1s_ease-in-out_infinite] rounded-full"></div>
                     </div>
-                `;
-
-                const saveBtn = document.getElementById('btn-save-ingest');
-                saveBtn.disabled = false;
-                saveBtn.className = "px-5 py-3 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white rounded-xl text-sm font-bold shadow-lg shadow-brand-500/20 transition-all w-full md:w-auto flex items-center justify-center cursor-pointer";
-                
-                window.showToast("文档解析完毕，已生成考核题库，请点击同步发布！", "success");
+                    <p class="text-[10px] text-brand-500 mt-2">AI 正在深度分析内容并裂变生成15道实战题库...</p>
+                </div>`;
+            
+            // 模拟 1.5秒 的服务器处理时间
+            setTimeout(() => {
+                simulateAIParsing(file.name);
             }, 1500);
         };
 
+        window.simulateAIParsing = function(fileName = "手工输入文本") {
+            let today = new Date().toISOString().split('T')[0];
+            
+            // 判断逻辑：如果上传的文件名包含 "9197"，则执行“覆盖旧内容”；否则创建“新灯具”
+            let isExisting = fileName.includes("9197");
+            
+            // 题库裂变引擎：自动生成 15 道题
+            let generatedQuestions = [];
+            for(let i = 1; i <= 15; i++) {
+                generatedQuestions.push({
+                    question: `[自动生成题 ${i}] 根据最新《${fileName}》技术规范，该灯具的核心技术壁垒是？`,
+                    options: [
+                        "搭载独家专利防水透气呼吸阀技术", 
+                        "采用传统加厚外壳增加重量", 
+                        "光效低于行业标准主打低价"
+                    ],
+                    answer: 0
+                });
+            }
+
+            if(isExisting) {
+                // 覆盖更新旧产品：强制修改 ID 为原有 ID 以触发覆盖机制
+                tempParsedData = {
+                    id: "nfc9197-50w",
+                    name: "海洋王 NFC9197-50W (AI解析覆盖更新版)",
+                    code: "OK-NFC9197-50W",
+                    category: "平台灯", wattage: "50W", efficacy: "180 lm/W (新参数)",
+                    protection: "IP66 / WF2", weight: "1.5 kg",
+                    newPrice: 620, updateDate: today,
+                    updateReason: `系统通过读取文件 [${fileName}] 自动覆盖更新并生成题库`,
+                    features: ["专利呼吸阀", "光效提升至180lm/W", "原生支持PLC/0-10V"],
+                    pkPoint: "光效全行业第一，已自动提取大容量实战题库",
+                    quizQuestions: generatedQuestions
+                };
+            } else {
+                // 创建全新产品：生成随机 ID
+                let newId = "ai-product-" + Date.now();
+                tempParsedData = {
+                    id: newId,
+                    name: fileName.replace(/\.[^/.]+$/, "") + " (全新生成灯具)",
+                    code: "OK-NEW-" + Math.floor(Math.random() * 10000),
+                    category: "高顶灯", wattage: "200W", efficacy: "160 lm/W",
+                    protection: "IP65", weight: "4.5 kg",
+                    newPrice: 1200, updateDate: today,
+                    updateReason: "全新产品文档上传生成入库",
+                    features: ["AI智能提取", "轻量化设计"],
+                    pkPoint: "智能生成产品，题库已同步裂变",
+                    quizQuestions: generatedQuestions
+                };
+            }
+
+            document.getElementById('ai-status-tag').textContent = "题库裂变成功";
+            document.getElementById('ai-status-tag').className = "text-xs px-2 py-0.5 rounded bg-brand-500/20 text-brand-500 font-bold border border-brand-500/30";
+            
+            document.getElementById('ai-output-box').innerHTML = `
+                <div class="bg-slate-950 p-4 rounded-xl border ${isExisting ? 'border-brand-gold/40' : 'border-brand-500/40'} space-y-3 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-16 h-16 ${isExisting ? 'bg-brand-gold/10' : 'bg-brand-500/10'} rounded-bl-full -mr-2 -mt-2"></div>
+                    <div class="flex justify-between items-start">
+                        <span class="font-bold text-white text-sm max-w-[70%]">${tempParsedData.name}</span>
+                        <span class="text-[10px] ${isExisting ? 'bg-brand-gold/20 text-brand-gold' : 'bg-brand-500/20 text-brand-500'} px-1.5 py-0.5 rounded flex items-center gap-1">
+                            <i class="fa-solid fa-file-import"></i> ${isExisting ? '发现同名·已覆盖旧数据' : '已创建全新产品'}
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-3 mt-1">
+                        <div class="bg-slate-900 px-3 py-2 rounded-lg border border-slate-800 flex-1">
+                            <span class="text-[10px] text-slate-500 block mb-0.5">调价后现行指导价</span>
+                            <span class="text-brand-gold font-bold text-sm font-mono">¥ ${tempParsedData.newPrice}</span>
+                        </div>
+                    </div>
+                    <div class="text-[11px] text-slate-300 bg-slate-800/50 p-2.5 rounded-lg border-l-2 ${isExisting ? 'border-brand-gold' : 'border-brand-accent'}">
+                        <i class="fa-solid fa-graduation-cap ${isExisting ? 'text-brand-gold' : 'text-brand-accent'} mr-1"></i>
+                        <strong>题库裂变完毕：</strong> 成功从文档中自动拆分出 <span class="text-brand-gold font-bold text-sm">15</span> 道培训考题。
+                    </div>
+                    <div class="text-[10px] text-slate-500 mt-2">请点击下方按钮将产品与题库同步至【全网数据库】。</div>
+                </div>
+            `;
+
+            const saveBtn = document.getElementById('btn-save-ingest');
+            saveBtn.disabled = false;
+            saveBtn.className = "px-5 py-3 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white rounded-xl text-sm font-bold shadow-lg shadow-brand-500/20 transition-all w-full md:w-auto flex items-center justify-center cursor-pointer";
+            
+            window.showToast(`✅ 文档解析完成！提取出 15 道实战考题。`, "success");
+        };
+
+        // --- STREAMING_CHUNK:Saving Ingested Data and Handling Cloud Sync ---
         // --- 8. 同步至云端 ---
         window.saveIngestedData = function() {
             if (!tempParsedData) return;
@@ -622,9 +699,15 @@
             let updatedProduct = null;
 
             if (existingIndex !== -1) {
-                updatedProduct = window.productDatabase[existingIndex];
+                // 更新现有产品
+                updatedProduct = { ...window.productDatabase[existingIndex] };
                 if (updatedProduct.currentPrice !== tempParsedData.newPrice) {
-                    updatedProduct.priceHistory.unshift({ date: tempParsedData.updateDate, price: tempParsedData.newPrice, reason: tempParsedData.updateReason });
+                    if (!updatedProduct.priceHistory) updatedProduct.priceHistory = [];
+                    updatedProduct.priceHistory.unshift({ 
+                        date: tempParsedData.updateDate, 
+                        price: tempParsedData.newPrice, 
+                        reason: tempParsedData.updateReason 
+                    });
                 }
                 updatedProduct.currentPrice = tempParsedData.newPrice;
                 updatedProduct.name = tempParsedData.name;
@@ -634,36 +717,58 @@
                 if(tempParsedData.quizQuestions) {
                     updatedProduct.quizQuestions = tempParsedData.quizQuestions;
                 }
+            } else {
+                // 全新产品转换格式适应数据库
+                updatedProduct = {
+                    ...tempParsedData,
+                    currentPrice: tempParsedData.newPrice,
+                    priceHistory: [{ date: tempParsedData.updateDate, price: tempParsedData.newPrice, reason: tempParsedData.updateReason }]
+                };
+                delete updatedProduct.newPrice;
+                delete updatedProduct.updateDate;
+                delete updatedProduct.updateReason;
             }
 
+            // 发送到云端，本地展示会通过 onSnapshot 自动更新
             if (typeof window.saveToCloud === 'function') {
                 window.saveToCloud(updatedProduct);
-                window.showToast("✅ 新参数及考核题库已通过云端同步至全员！", "success");
+                window.showToast("✅ 新参数及 15 道考核题已同步至全员！", "success");
             } else {
+                // 如果没有云端权限的 fallback
+                if(existingIndex !== -1) {
+                    window.productDatabase[existingIndex] = updatedProduct;
+                } else {
+                    window.productDatabase.push(updatedProduct);
+                }
                 window.filterProducts();
+                window.updateCourseSelect();
+                window.showToast("✅ 数据仅在本地更新 (未连接云端)", "warning");
             }
 
-            window.updateCourseSelect();
-            if (!document.getElementById('view-learning').classList.contains('hidden')) { window.loadCourse(); }
-
+            // 重置投喂界面
             tempParsedData = null;
             document.getElementById('ingest-text-input').value = "";
             document.getElementById('btn-save-ingest').disabled = true;
-            document.getElementById('btn-save-ingest').className = "px-5 py-2.5 bg-slate-800 text-slate-500 rounded-xl text-sm font-bold cursor-not-allowed transition-all w-full md:w-auto hidden";
-            document.getElementById('ai-output-box').innerHTML = `<div class="flex flex-col items-center justify-center h-full text-slate-600 py-12"><i class="fa-regular fa-circle-check text-5xl mb-3 text-brand-500/50"></i><span class="font-bold text-slate-400">数据与题库已成功入库并分发</span></div>`;
+            document.getElementById('btn-save-ingest').className = "px-5 py-3 bg-slate-800 text-slate-500 rounded-xl text-sm font-bold cursor-not-allowed transition-all w-full md:w-auto flex items-center justify-center";
+            document.getElementById('ai-output-box').innerHTML = `<div class="flex flex-col items-center justify-center h-full text-slate-600 py-12"><i class="fa-regular fa-circle-check text-5xl mb-3 text-brand-500/50"></i><span class="font-bold text-slate-400">数据与大题库已成功同步分发全网</span></div>`;
             
+            // 自动跳转到培训中心
             setTimeout(() => {
                 window.switchTab('learning');
-                document.getElementById('courseSelect').value = 'nfc9197-50w';
-                window.loadCourse();
+                if(document.getElementById('courseSelect')) {
+                    document.getElementById('courseSelect').value = updatedProduct.id;
+                    window.loadCourse();
+                }
             }, 1000);
         };
 
-        // --- 9. 培训中心模块 (动态题库) ---
+        // --- STREAMING_CHUNK:Building the dynamic Learning and Quiz system ---
+        // --- 9. 培训中心模块 (动态题库与随机抽题) ---
         window.updateCourseSelect = function() {
             const select = document.getElementById('courseSelect');
+            if(!select) return;
             const currentVal = select.value;
-            let html = `<option value="ALL">🌟 全系产品综合随机抽题考核</option>`;
+            let html = `<option value="ALL">🌟 全系产品综合随机抽题考核 (5题)</option>`;
             window.productDatabase.forEach(p => {
                 html += `<option value="${p.id}">专项考核：${p.name}</option>`;
             });
@@ -681,7 +786,7 @@
                 pitchBox.innerHTML = `
                     <div class="text-center py-5 text-slate-500">
                         <i class="fa-solid fa-shuffle text-3xl mb-3 text-brand-gold/50"></i>
-                        <p class="text-sm">系统将从全网知识库提取的文档中随机抽取题目</p>
+                        <p class="text-sm">系统将从全网知识库的所有产品中随机抽取题目</p>
                     </div>`;
                 pkBox.innerHTML = `
                     <div class="text-center py-5 text-slate-500">
@@ -725,7 +830,7 @@
             const container = document.getElementById('quiz-container');
 
             if (questions.length === 0) {
-                container.innerHTML = `<div class="text-center py-10 text-slate-500 text-sm">暂无考题记录，请前往【资料投喂】处粘贴文档提取。</div>`;
+                container.innerHTML = `<div class="text-center py-10 text-slate-500 text-sm">该产品暂无考题记录，请前往【AI 资料投喂】处拖入文档自动生成。</div>`;
                 document.getElementById('quiz-score').textContent = "无考题";
                 return;
             }
@@ -748,7 +853,7 @@
                 `;
             });
             container.innerHTML = html;
-            document.getElementById('quiz-score').textContent = "答题进行中...";
+            document.getElementById('quiz-score').textContent = `共 ${questions.length} 题，请作答`;
             document.getElementById('quiz-score').className = "text-[10px] font-bold text-slate-500 bg-slate-800 px-2 py-0.5 rounded";
         };
 
@@ -788,7 +893,7 @@
             });
 
             if (!allAnswered) {
-                window.showToast("⚠️ 判卷失败：请完成所有题目的作答！", "error");
+                window.showToast("⚠️ 判卷失败：请完成所有题目的作答！", "warning");
                 return;
             }
 

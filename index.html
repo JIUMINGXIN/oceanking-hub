@@ -88,7 +88,6 @@
                             <option value="非防爆">🏭 非防爆固定灯 (N系列/9xxx)</option>
                             <option value="高顶灯">💡 高顶灯系列 (含NGC/BGC等)</option>
                             <option value="平台灯">🏮 平台灯系列 (含BPC/NPC等)</option>
-                            <!-- ★ 更新文案：显式包含 M 字母 ★ -->
                             <option value="便携">🔋 便携/工作灯 (含J/R/M/5/7xxx)</option>
                             <option value="移动">🚗 移动/升降灯 (含S/Y/M/6xxx)</option>
                         </select>
@@ -118,7 +117,7 @@
             <div class="glass-panel p-6 rounded-2xl space-y-6">
                 <div>
                     <h2 class="text-xl font-bold text-white flex items-center gap-2"><i class="fa-solid fa-wand-magic-sparkles text-brand-gold"></i> 文档智能解析与题库大裂变</h2>
-                    <p class="text-sm text-slate-400 mt-1">支持拖拽 PDF、Word、PPTX 或 TXT！系统将自动识别型号前缀 (如BPC/NGC)，并裂变出 <span class="text-brand-500 font-bold">至少 15 道 (上不封顶)</span> 的实战考题。</p>
+                    <p class="text-sm text-slate-400 mt-1">支持拖拽 PDF、Word、PPTX 或 TXT！系统将自动识别型号前缀 (如BPC/MIW)，并裂变出 <span class="text-brand-500 font-bold">至少 15 道 (上不封顶)</span> 的实战考题。</p>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -410,7 +409,8 @@
                         <i class="fa-solid fa-trash-can"></i>
                     </button>
                     <div class="flex items-start justify-between gap-2 pr-8">
-                        <span class="px-2.5 py-1 rounded-md text-[10px] font-bold bg-brand-500/10 text-brand-500 border border-brand-500/20">${p.category}</span>${p.code ? `<span class="text-[10px] text-slate-500 font-mono bg-slate-950 px-2 py-0.5 rounded border border-slate-800">${p.code}</span>` : ''}
+                        <span class="px-2.5 py-1 rounded-md text-[10px] font-bold bg-brand-500/10 text-brand-500 border border-brand-500/20">${p.category}</span>
+                        ${p.code ? `<span class="text-[10px] text-slate-500 font-mono bg-slate-950 px-2 py-0.5 rounded border border-slate-800">${p.code}</span>` : ''}
                     </div>
                     <div>
                         <h3 class="font-bold text-white text-base leading-tight group-hover:text-brand-400 transition-colors">${p.name}</h3>
@@ -447,6 +447,7 @@
                     // 当下拉选择防爆时，必须包含“防爆”且绝不能包含“非防爆”
                     matchCat = p.category && p.category.includes('防爆') && !p.category.includes('非防爆');
                 } else {
+                    // M 系列因为是“便携/移动”，所以包含任意一个词都会被匹配
                     matchCat = p.category && p.category.includes(category);
                 }
                 
@@ -474,7 +475,7 @@
             document.getElementById('detail-question-count').textContent = `共 ${qCount} 题`;
             let qHtml = qCount > 0 ? product.quizQuestions.map((q, i) => `
                     <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
-                        <p class="text-xs font-bold text-slate-300 mb-2">${i+1}.${q.question}</p>
+                        <p class="text-xs font-bold text-slate-300 mb-2">${i+1}. ${q.question}</p>
                         <div class="space-y-1.5 pl-2">
                             ${q.options.map((opt, idx) => `
                                 <div class="text-[11px] flex items-start gap-2 ${idx === q.answer ? 'text-brand-500 font-bold bg-brand-500/10 p-1 rounded' : 'text-slate-500'}">
@@ -757,12 +758,9 @@ JSON 格式严格遵守如下：
             const result = await response.json();
             let resultText = result.choices[0].message.content.trim();
             
-            if (resultText.startsWith('
-```json')) resultText = resultText.substring(7);
-            else if (resultText.startsWith('
-```')) resultText = resultText.substring(3);
-            if (resultText.endsWith('
-```')) resultText = resultText.slice(0, -3);
+            if (resultText.startsWith('```json')) resultText = resultText.substring(7);
+            else if (resultText.startsWith('```')) resultText = resultText.substring(3);
+            if (resultText.endsWith('```')) resultText = resultText.slice(0, -3);
 
             try {
                 return JSON.parse(resultText);

@@ -213,8 +213,8 @@
         <span class="absolute -top-2 -right-2 bg-red-500 text-[9px] font-bold px-1.5 py-0.5 rounded-full border-2 border-slate-950 animate-pulse">AI</span>
     </button>
 
-    <!-- ★ AI 选型顾问 对话面板 ★ -->
-    <div id="copilot-panel" class="fixed bottom-40 md:bottom-28 right-6 w-[90vw] md:w-96 h-[500px] max-h-[70vh] bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl flex-col hidden z-50 transform transition-transform duration-300 origin-bottom-right">
+    <!-- ★ AI 选型顾问 对话面板 (已修复 flex 属性，内嵌完美滚动条) ★ -->
+    <div id="copilot-panel" class="fixed bottom-40 md:bottom-28 right-6 w-[90vw] md:w-96 h-[500px] max-h-[70vh] bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl flex flex-col hidden z-50 transform transition-transform duration-300 origin-bottom-right">
         <div class="px-4 py-3 border-b border-slate-800 flex justify-between items-center bg-slate-900 rounded-t-2xl">
             <div class="flex items-center gap-2">
                 <i class="fa-solid fa-robot text-brand-500 text-xl"></i>
@@ -775,8 +775,9 @@ JSON 格式严格遵守如下：
             const result = await response.json();
             let resultText = result.choices[0].message.content.trim();
             
-            // 安全清理 Markdown 标记
-            resultText = resultText.replace(/^```json/i, '').replace(/^```/i, '').replace(/```$/i, '').trim();
+            if (resultText.startsWith('```json')) resultText = resultText.substring(7);
+            else if (resultText.startsWith('```')) resultText = resultText.substring(3);
+            if (resultText.endsWith('```')) resultText = resultText.slice(0, -3);
 
             try {
                 return JSON.parse(resultText);
@@ -922,7 +923,7 @@ JSON 格式严格遵守如下：
             }
         };
 
-        // --- ★ AI 选型顾问 (Sales Copilot) 核心逻辑 ★ ---
+        // --- ★ 悬浮 AI 选型顾问 (Sales Copilot) 核心逻辑 ★ ---
         window.toggleCopilot = function() {
             const panel = document.getElementById('copilot-panel');
             panel.classList.toggle('hidden');
@@ -974,7 +975,6 @@ JSON 格式严格遵守如下：
             chatArea.scrollTop = chatArea.scrollHeight;
         }
 
-        // 确保纯前端原生 fetch 调用大模型不出错
         window.sendCopilotMessage = async function() {
             const input = document.getElementById('copilot-input');
             const query = input.value.trim();
@@ -1033,13 +1033,16 @@ ${contextText}
                     })
                 });
                 
-                if (!response.ok) throw new Error("API Error");
+                if (!response.ok) {
+                    const errData = await response.json().catch(()=>({}));
+                    throw new Error(errData.error?.message || `HTTP ${response.status}`);
+                }
                 const data = await response.json();
                 const reply = data.choices[0].message.content;
                 updateCopilotMessage(reply);
             } catch(e) {
                 console.error("Copilot 请求失败", e);
-                updateCopilotMessage("网络异常，无法连接到选型大脑，请稍后再试。");
+                updateCopilotMessage(`⚠️ 网络或接口异常 (${e.message})。<br>请确认：<br>1. 电脑网络正常<br>2. 浏览器未开启严格的防追踪拦截<br>3. 密钥额度充足`);
             }
         };
     </script>

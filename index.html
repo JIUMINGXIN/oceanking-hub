@@ -726,6 +726,7 @@
             }
         };
 
+        // ★ 核心修复：加入环境智能侦测，自动切换 API 路径防跨域 ★
         async function callDeepSeekAPI(text, fileName) {
             const promptText = `你是海洋王工业照明领域的资深技术支持与培训出题专家。请根据以下输入，提炼该灯具产品的核心信息，并**自动生成用于销售培训的实战单选题**。
 
@@ -749,7 +750,12 @@ JSON 格式严格遵守如下：
 }`;
 
             const DEEPSEEK_API_KEY = "sk-f588579c2d6a428dba13d9e89938f99f"; 
-            const apiUrl = "https://api.deepseek.com/chat/completions";
+            
+            // 自动环境侦测：如果在 Vercel 等线上环境运行，自动走反向代理路径
+            let apiUrl = "https://api.deepseek.com/chat/completions";
+            if (window.location.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && window.location.protocol !== 'file:') {
+                apiUrl = "/api/deepseek/chat/completions";
+            }
 
             const payload = {
                 model: "deepseek-chat",
@@ -923,7 +929,7 @@ JSON 格式严格遵守如下：
             }
         };
 
-        // --- ★ 悬浮 AI 选型顾问 (Sales Copilot) 核心逻辑 ★ ---
+        // --- ★ AI 选型顾问 (Sales Copilot) 核心逻辑 ★ ---
         window.toggleCopilot = function() {
             const panel = document.getElementById('copilot-panel');
             panel.classList.toggle('hidden');
@@ -975,6 +981,7 @@ JSON 格式严格遵守如下：
             chatArea.scrollTop = chatArea.scrollHeight;
         }
 
+        // ★ 核心修复：Copilot 环境智能侦测，自动切换 API 路径 ★
         window.sendCopilotMessage = async function() {
             const input = document.getElementById('copilot-input');
             const query = input.value.trim();
@@ -1019,12 +1026,20 @@ ${contextText}
 
             appendCopilotMessage('ai-typing', '<span class="typing-cursor">正在检索本地灯具库并组织话术...</span>');
 
+            const DEEPSEEK_API_KEY = "sk-f588579c2d6a428dba13d9e89938f99f"; 
+            
+            // 自动环境侦测：如果在 Vercel 等线上环境运行，自动走反向代理路径
+            let apiUrl = "[https://api.deepseek.com/chat/completions](https://api.deepseek.com/chat/completions)";
+            if (window.location.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && window.location.protocol !== 'file:') {
+                apiUrl = "/api/deepseek/chat/completions";
+            }
+
             try {
-                const response = await fetch("[https://api.deepseek.com/chat/completions](https://api.deepseek.com/chat/completions)", {
+                const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': 'Bearer sk-f588579c2d6a428dba13d9e89938f99f'
+                        'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
                     },
                     body: JSON.stringify({
                         model: "deepseek-chat",
@@ -1033,16 +1048,13 @@ ${contextText}
                     })
                 });
                 
-                if (!response.ok) {
-                    const errData = await response.json().catch(()=>({}));
-                    throw new Error(errData.error?.message || `HTTP ${response.status}`);
-                }
+                if (!response.ok) throw new Error("API 请求失败");
                 const data = await response.json();
                 const reply = data.choices[0].message.content;
                 updateCopilotMessage(reply);
             } catch(e) {
                 console.error("Copilot 请求失败", e);
-                updateCopilotMessage(`⚠️ 网络或接口异常 (${e.message})。<br>请确认：<br>1. 电脑网络正常<br>2. 浏览器未开启严格的防追踪拦截<br>3. 密钥额度充足`);
+                updateCopilotMessage("网络异常，无法连接到选型大脑，请稍后再试。");
             }
         };
     </script>

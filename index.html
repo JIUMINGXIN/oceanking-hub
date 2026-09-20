@@ -695,8 +695,9 @@ JSON 格式严格遵守如下：
             // =========================================================
             // ⚠️ 极其重要：请在这里填入您在 DeepSeek 申请的 API 密钥！
             // =========================================================
-            const DEEPSEEK_API_KEY = "sk-4db5b9151bf644e08d37838abdc2da14"; 
-            const apiUrl = "https://api.deepseek.com/chat/completions";
+const DEEPSEEK_API_KEY = "sk-f588579c2d6a428dba13d9e89938f99f"; 
+// ★ 使用 Vercel 反向代理地址，绕过浏览器的跨域拦截
+const apiUrl = "/api/deepseek/chat/completions";
 
             const payload = {
                 model: "deepseek-chat",

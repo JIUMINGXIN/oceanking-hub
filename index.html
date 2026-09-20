@@ -102,6 +102,7 @@
 
             <div class="flex items-center justify-between text-xs text-slate-400 px-1">
                 <div>共找到 <span id="product-count" class="font-bold text-brand-500">0</span> 款匹配产品</div>
+                <div class="text-slate-500">提示：卡片右下角 🗑️ 可清理废弃测试数据</div>
             </div>
 
             <div id="product-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -114,7 +115,7 @@
             <div class="glass-panel p-6 rounded-2xl space-y-6">
                 <div>
                     <h2 class="text-xl font-bold text-white flex items-center gap-2"><i class="fa-solid fa-wand-magic-sparkles text-brand-gold"></i> 文档智能解析与题库大裂变</h2>
-                    <p class="text-sm text-slate-400 mt-1">支持拖拽 PDF、Word、PPTX 或 TXT！AI 将自动提取内容，生成档案并裂变出 <span class="text-brand-500 font-bold">15 道实战考题</span>。</p>
+                    <p class="text-sm text-slate-400 mt-1">支持拖拽 PDF、Word、PPTX 或 TXT！AI 将自动提取内容，生成档案并根据内容量裂变出 <span class="text-brand-500 font-bold">至少 15 道 (上不封顶)</span> 的实战考题。</p>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -124,7 +125,7 @@
                         <div id="drop-zone" onclick="triggerFileInput()" class="border-2 border-dashed border-slate-700 hover:border-brand-500 bg-slate-900/50 hover:bg-brand-500/10 rounded-2xl p-6 flex flex-col items-center justify-center text-center transition-all relative group h-36 cursor-pointer" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
                             <i class="fa-solid fa-file-powerpoint text-3xl text-slate-500 group-hover:text-brand-500 mb-2 transition-colors"></i>
                             <h3 class="text-sm font-bold text-slate-200" id="file-name-display">拖拽或点击上传文件 (PDF / Word / PPTX / TXT)</h3>
-                            <p class="text-[10px] text-brand-gold mt-2 bg-brand-gold/10 px-2 py-1 rounded">✨ 智能防重覆盖版：自动识别相同型号并更新题库！</p>
+                            <p class="text-[10px] text-brand-gold mt-2 bg-brand-gold/10 px-2 py-1 rounded">✨ 强力除重版：系统将根据灯具核心型号自动覆盖更新旧数据！</p>
                         </div>
                         
                         <div>
@@ -135,7 +136,7 @@
                         </div>
                         
                         <button onclick="startAIParsing()" id="btn-parse-ai" class="w-full py-3 bg-gradient-to-r from-brand-600 to-brand-accent hover:from-brand-500 hover:to-brand-accent text-white font-medium text-sm rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-bolt"></i> 启动 AI 深度解析与出题 (15题)
+                            <i class="fa-solid fa-bolt"></i> 启动 AI 深度解析与出题 (最少15题+)
                         </button>
                     </div>
 
@@ -147,7 +148,7 @@
                         <div id="ai-output-box" class="flex-1 space-y-3 text-xs text-slate-400 overflow-y-auto max-h-[400px] custom-scrollbar pr-2 relative">
                             <div class="flex flex-col items-center justify-center h-full text-slate-600 py-12">
                                 <i class="fa-solid fa-file-pdf text-4xl mb-3"></i>
-                                <span class="text-center px-4">拖入文档并点击解析，AI将在此展示<br>产品档案及 15 道实战考题。</span>
+                                <span class="text-center px-4">拖入文档并点击解析，AI将在此展示<br>产品档案及生成的实战不重复考题。</span>
                             </div>
                         </div>
                         <div class="border-t border-slate-800 pt-4 mt-4 flex justify-end">
@@ -166,7 +167,7 @@
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
                     <div>
                         <h2 class="text-xl font-bold text-white flex items-center gap-2"><i class="fa-solid fa-graduation-cap text-brand-gold"></i> 销售实战考评中心</h2>
-                        <p class="text-sm text-slate-400 mt-1">题目由 AI 根据真实产品资料动态生成，考察竞品对抗与参数掌握。</p>
+                        <p class="text-sm text-slate-400 mt-1">综合大考将从各产品线分别抽取10题混编，全面检验业务水平。</p>
                     </div>
                     <div class="flex items-center gap-2 w-full md:w-auto">
                         <span class="text-xs text-slate-400 font-bold bg-slate-900 px-3 py-2 rounded-lg border border-slate-800 hidden sm:block">考试模式：</span>
@@ -273,7 +274,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // ==========================================
         // 您的专属 Firebase 配置
@@ -308,14 +309,27 @@
                 updateCloudUI("云端实时同步中", "brand-500", "brand-500");
                 const productsCollection = collection(db, 'artifacts', 'oceanking-hub', 'public', 'data', 'products');
 
+                // 云端保存功能 (强覆盖)
                 window.saveToCloud = async function(productData) {
                     if (!auth.currentUser) return;
                     try {
                         const productRef = doc(productsCollection, productData.id);
-                        await setDoc(productRef, productData, { merge: true });
+                        await setDoc(productRef, productData, { merge: false }); // merge: false 确保完全覆盖旧结构
                     } catch(err) {
                         console.error("云端写入失败:", err);
                         window.showToast("云端同步失败，请检查数据库权限", "error");
+                    }
+                };
+                
+                // 云端删除功能（用于清理截图里的脏数据）
+                window.deleteProduct = async function(productId, productName) {
+                    if(!confirm(`⚠️ 危险操作：确定要从全网永久删除【${productName}】吗？\n此操作不可恢复！`)) return;
+                    try {
+                        await deleteDoc(doc(productsCollection, productId));
+                        window.showToast(`已成功删除产品：${productName}`, "success");
+                    } catch(err) {
+                        console.error("删除失败:", err);
+                        window.showToast("删除失败，请重试", "error");
                     }
                 };
 
@@ -324,14 +338,8 @@
                     let cloudProducts = [];
                     snapshot.forEach((docSnap) => { cloudProducts.push(docSnap.data()); });
                     
-                    if (cloudProducts.length > 0) {
-                        window.productDatabase = cloudProducts;
-                    } else {
-                        // 初始空数据库时，把本地的 9197 数据传上去
-                        if(window.productDatabase && window.productDatabase.length > 0) {
-                            window.productDatabase.forEach(p => window.saveToCloud(p));
-                        }
-                    }
+                    window.productDatabase = cloudProducts; // 永远以云端真实数据为准
+                    
                     window.filterProducts();
                     if(window.updateCourseSelect) window.updateCourseSelect();
                 }, (error) => {
@@ -367,21 +375,8 @@
             setTimeout(() => { toast.classList.replace('toast-enter', 'toast-exit'); setTimeout(() => toast.remove(), 300); }, 3500);
         };
 
-        // --- 2. 初始预置本地数据 ---
-        window.productDatabase = [
-            {
-                id: "nfc9197", name: "海洋王 NFC9197-50W LED 平台灯", category: "平台灯", code: "OK-NFC9197-50W",
-                wattage: "50W", efficacy: "175 lm/W", protection: "IP66 / WF2", weight: "1.5 kg",
-                features: ["独创专利防水透气呼吸阀", "175lm/W极高光效", "1.5kg超轻量化单手挂装", "原生支持PLC/0-10V智能调光"], 
-                pkPoint: "彻底解决热胀冷缩吸潮导致死灯痛点，光效高出竞品30%以上。",
-                quizQuestions: [
-                    { question: "NFC9197 解决工业吸潮死灯痛点的核心关键结构是？", options: ["专利防水透气呼吸阀", "加厚外壳橡胶密封圈", "内置干燥剂包", "双层玻璃罩"], answer: 0 },
-                    { question: "50W 玻璃款的最高整灯光效大约是多少？", options: ["120 lm/W", "175 lm/W", "100 lm/W", "140 lm/W"], answer: 1 },
-                    { question: "该灯具实现高空轻松安装，其重量大约是？", options: ["3.5 kg", "1.5 kg", "5.0 kg", "2.8 kg"], answer: 1 }
-                ]
-            }
-        ];
-
+        // --- 2. 初始预置本地数据 (空数组，强依赖云端) ---
+        window.productDatabase = [];
         let tempParsedData = null; 
         let dragFileName = "";
 
@@ -406,17 +401,22 @@
             if(activeMBtn) activeMBtn.classList.add('text-brand-500'), activeMBtn.classList.remove('text-slate-500');
         };
 
-        // --- 4. 渲染纯技术产品卡片 ---
+        // --- 4. 渲染纯技术产品卡片 (含删除按钮) ---
         window.renderProductGrid = function(products) {
             const grid = document.getElementById('product-grid');
             document.getElementById('product-count').textContent = products.length;
             if (products.length === 0) {
-                grid.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center py-20"><i class="fa-solid fa-box-open text-4xl text-slate-700 mb-4"></i><h3 class="text-slate-400">未找到匹配产品</h3></div>`;
+                grid.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center py-20"><i class="fa-solid fa-box-open text-4xl text-slate-700 mb-4"></i><h3 class="text-slate-400">未找到产品数据，请先前往 AI 投喂</h3></div>`;
                 return;
             }
             grid.innerHTML = products.map(p => `
-                <div class="bg-slate-900/90 border border-slate-800 hover:border-brand-500/50 rounded-2xl p-5 space-y-4 transition-all duration-300 hover:-translate-y-1 flex flex-col group">
-                    <div class="flex items-start justify-between gap-2">
+                <div class="bg-slate-900/90 border border-slate-800 hover:border-brand-500/50 rounded-2xl p-5 space-y-4 transition-all duration-300 hover:-translate-y-1 flex flex-col group relative">
+                    <!-- ★ 隐藏的删除按钮，用于清理冗余旧数据 -->
+                    <button onclick="deleteProduct('${p.id}', '${p.name}')" title="删除废弃卡片" class="absolute top-4 right-4 text-slate-600 hover:text-red-500 transition-colors z-10 bg-slate-950 p-1.5 rounded border border-slate-800 hover:border-red-500/30">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                    
+                    <div class="flex items-start justify-between gap-2 pr-8">
                         <span class="px-2.5 py-1 rounded-md text-[10px] font-bold bg-brand-500/10 text-brand-500 border border-brand-500/20">${p.category}</span>${p.code ? `<span class="text-[10px] text-slate-500 font-mono bg-slate-950 px-2 py-0.5 rounded border border-slate-800">${p.code}</span>` : ''}
                     </div>
                     <div>
@@ -435,7 +435,7 @@
                     </div>
                     <div class="border-t border-slate-800 pt-4 mt-2">
                         <button onclick="openProductModal('${p.id}')" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-brand-400 text-xs font-bold rounded-xl transition-colors flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-file-lines"></i> 查看产品全息档案与题库
+                            <i class="fa-solid fa-file-lines"></i> 查看全息档案 & ${p.quizQuestions ? p.quizQuestions.length : 0}道题
                         </button>
                     </div>
                 </div>
@@ -571,10 +571,12 @@
             }
         }
 
-        // 精准提取产品型号核心字符串 (如 "NFC9197", "9826H") 用于防重复
-        function extractModelNumber(text) {
-            const match = text.match(/[A-Za-z0-9]{4,}/);
-            return match ? match[0].toUpperCase() : text.trim().toUpperCase();
+        // ★ 核心除重函数：极其精确地抓取海洋王灯具的核心型号 (如 9826H, NFC9197) ★
+        function extractCoreModel(text) {
+            const match = text.match(/([A-Za-z]{3}\d{4})|(\d{4}[A-Za-z])|(HYW-[A-Za-z0-9\-]+)/i);
+            if (match) return match[0].toUpperCase();
+            const fallback = text.match(/[A-Za-z0-9]{4,}/);
+            return fallback ? fallback[0].toUpperCase() : "UNKNOWN_" + Date.now();
         }
 
         window.startAIParsing = async function() {
@@ -586,41 +588,31 @@
 
             const btn = document.getElementById('btn-parse-ai');
             const originalBtnHtml = btn.innerHTML;
-            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> AI 正在深度阅读并裂变 15 道题库中...`;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> AI 正在深度阅读并无上限裂变题库中...`;
             btn.disabled = true;
-            document.getElementById('ai-status-tag').textContent = "DeepSeek 解析中...";
+            document.getElementById('ai-status-tag').textContent = "DeepSeek 大模型解析中...";
             document.getElementById('ai-status-tag').className = "text-[10px] px-2 py-0.5 rounded bg-brand-gold/20 text-brand-gold font-bold border border-brand-gold/30 animate-pulse";
             document.getElementById('ai-output-box').innerHTML = `
                 <div class="flex flex-col items-center justify-center h-full text-slate-400 py-10 space-y-4">
                     <div class="w-16 h-16 rounded-full border-4 border-slate-800 border-t-brand-500 animate-spin"></div>
-                    <p class="text-xs text-brand-500 mt-2">正在进行 15 题大容量题库裂变，可能需要 15-20 秒，请耐心等待...</p>
+                    <p class="text-xs text-brand-500 mt-2">正在进行大容量题库裂变 (上不封顶)，需要深度思考，请耐心等待 (约10~30秒)...</p>
                 </div>`;
 
             try {
                 const parsedResult = await callDeepSeekAPI(textContent, dragFileName);
                 if(!parsedResult || !parsedResult.name) throw new Error("解析格式错误");
 
-                // ★ 强化查重与覆盖逻辑：通过核心型号智能比对
-                let isExisting = false;
-                let finalId = "ai-product-" + Date.now();
-                let productCode = parsedResult.code || `OK-${parsedResult.name.split(' ')[0]}`;
-                
-                const incomingModel = extractModelNumber(parsedResult.name); // 比如提取出 "NFC9197"
-                
-                if(window.productDatabase && window.productDatabase.length > 0) {
-                    const existProduct = window.productDatabase.find(p => {
-                        const pModel = extractModelNumber(p.name);
-                        return pModel === incomingModel || (p.code && parsedResult.code && p.code === parsedResult.code);
-                    });
-                    if(existProduct) {
-                        isExisting = true; 
-                        finalId = existProduct.id; 
-                        productCode = existProduct.code || productCode;
-                    }
-                }
+                // ★ 使用核心型号算法强制覆盖旧数据，绝不产生重名
+                const coreModelStr = extractCoreModel(parsedResult.name) || extractCoreModel(dragFileName);
+                // 强制将文档 ID 命名为 "ok_prod_NFC9197" 这种格式。一旦存入 Firebase，同型号必定互相覆盖！
+                const finalId = "ok_prod_" + coreModelStr;
+                let productCode = parsedResult.code || `OK-${coreModelStr}`;
+
+                // 检查本地库是否已经有这个 ID（仅仅用于给用户展示“即将覆盖”的提示文字）
+                const isExisting = window.productDatabase.some(p => p.id === finalId || extractCoreModel(p.name) === coreModelStr);
 
                 tempParsedData = {
-                    id: finalId,
+                    id: finalId, // 唯一身份证，防重复的关键
                     name: parsedResult.name,
                     code: productCode,
                     category: parsedResult.category || "工业照明",
@@ -633,7 +625,7 @@
                     quizQuestions: parsedResult.questions || []
                 };
 
-                document.getElementById('ai-status-tag').textContent = `成功提取 ${tempParsedData.quizQuestions.length} 题`;
+                document.getElementById('ai-status-tag').textContent = `火力全开！成功提取 ${tempParsedData.quizQuestions.length} 题`;
                 document.getElementById('ai-status-tag').className = "text-[10px] px-2 py-0.5 rounded bg-brand-500/20 text-brand-500 font-bold border border-brand-500/30";
                 
                 document.getElementById('ai-output-box').innerHTML = `
@@ -641,15 +633,15 @@
                         <div class="flex justify-between items-start">
                             <span class="font-bold text-white text-sm">${tempParsedData.name}</span>
                             <span class="text-[9px] ${isExisting ? 'bg-brand-gold/20 text-brand-gold' : 'bg-brand-500/20 text-brand-500'} px-1.5 py-0.5 rounded">
-                                ${isExisting ? `检测到同型号(${incomingModel})·将完美覆盖更新` : '全新产品档案'}
+                                ${isExisting ? `精准识别同款(${coreModelStr})·将强力覆盖旧档` : '全新产品档案'}
                             </span>
                         </div>
                         <div class="grid grid-cols-2 gap-2 mt-2 text-[10px] text-slate-400">
                             <div>编码：<span class="text-slate-200">${tempParsedData.code}</span></div>
-                            <div>光效：<span class="text-brand-500">${tempParsedData.efficacy}</span></div>
+                            <div>核心型号鉴权：<span class="text-brand-500">${coreModelStr}</span></div>
                         </div>
                         <div class="text-xs text-slate-300 bg-slate-800/50 p-2.5 rounded-lg border-l-2 ${isExisting ? 'border-brand-gold' : 'border-brand-accent'}">
-                            <strong>AI 出题报告：</strong> 从文稿中完美拆分出 <span class="text-brand-500 font-bold">${tempParsedData.quizQuestions.length}</span> 道多维度实战考题。
+                            <strong>AI 出题报告：</strong> 根据您的丰富文稿，完美拆分出 <span class="text-brand-500 font-bold text-sm">${tempParsedData.quizQuestions.length}</span> 道多维度实战考题！
                         </div>
                     </div>
                 `;
@@ -657,19 +649,19 @@
                 const saveBtn = document.getElementById('btn-save-ingest');
                 saveBtn.disabled = false;
                 saveBtn.className = "px-5 py-3 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white rounded-xl text-sm font-bold shadow-lg transition-all w-full flex items-center justify-center cursor-pointer";
-                window.showToast("✅ AI 解析及出题完成！请点击底部按钮同步全网。", "success");
+                window.showToast("✅ AI 解析及出题完成！请点击底部按钮同步覆盖全网。", "success");
 
             } catch (error) {
                 console.error("AI解析错误:", error);
-                document.getElementById('ai-output-box').innerHTML = `<div class="text-red-500 text-xs text-center py-10">AI 解析失败，请检查 API 密钥配置或网络环境。</div>`;
-                document.getElementById('ai-status-tag').textContent = "解析失败";
+                document.getElementById('ai-output-box').innerHTML = `<div class="text-red-500 text-xs text-center py-10">AI 解析失败，请检查网络环境或重新提取文本。</div>`;
+                document.getElementById('ai-status-tag').textContent = "解析异常";
                 window.showToast("AI 解析出现异常", "error");
             } finally {
                 btn.innerHTML = originalBtnHtml; btn.disabled = false;
             }
         };
 
-        // --- ★ 核心升级：15道题强制指令 & 专属 API 密钥 ★ ---
+        // --- ★ 解放题量封印：最少15题，上不封顶！& 专属 API 密钥直连 ★ ---
         async function callDeepSeekAPI(text, fileName) {
             const promptText = `你是海洋王工业照明领域的资深技术支持与培训出题专家。请根据以下输入，提炼该灯具产品的核心信息，并**自动生成用于销售培训的实战单选题**。
 
@@ -680,31 +672,29 @@
 处理要求：
 1. 提取或推断：产品名称、产品订货编码（若无则推测）、分类（平台灯/高顶灯/防爆灯等）、功率、光效、防护/防腐等级、重量。
 2. 提炼：3-5 条核心优势亮点（features）和 1 条针对竞品的打法或控标点（pkPoint）。
-3. 智能出题（★绝对禁止重复★）：请**固定生成 15 道完全不同维度**的单项选择题。
-   - 必须严格涵盖以下5个不同维度：① 核心参数数值记忆、② 独特结构优势（如散热/防潮设计）、③ 竞品劣势打击/控标点、④ 目标应用场景（如炼钢/皮带通廊）、⑤ 安装与维护注意事项。
-   - 警告：**15道题目的考点必须完全独立，绝不能出现换汤不换药的重复提问！** 选项要有强烈的实战迷惑性。
+3. 智能出题（★绝对禁止重复，尽量榨干文稿考点★）：请根据文稿的丰富程度，**生成最少 15 道单项选择题，如果文档信息量大，请尽可能多地生成（例如 20 道或更多），上不封顶**。
+   - 必须严格涵盖以下5个不同维度：① 参数数值记忆、② 独特结构优势（如散热/呼吸阀/防潮设计）、③ 竞品劣势打击/控标点、④ 目标应用场景（如炼钢/皮带通廊/配电室）、⑤ 安装与维护注意事项。
+   - 警告：**所有题目的考点必须完全独立，绝不能出现换汤不换药的重复提问！** 选项要有强烈的实战迷惑性。
 
 输出格式：请务必只输出一段合法的 JSON 字符串，不要包含任何 markdown 语法（如 \`\`\`json ），确保可以直接被 JSON.parse 解析。
 JSON 格式严格遵守如下：
 {
-  "name": "产品名", "code": "订货编码", "category": "分类", "wattage": "功率", "efficacy": "光效", "protection": "防护等级", "weight": "重量",
+  "name": "产品全名", "code": "订货编码", "category": "分类", "wattage": "功率", "efficacy": "光效", "protection": "防护等级", "weight": "重量",
   "features": ["特点1", "特点2"], "pkPoint": "控标点",
   "questions": [ { "question": "问题描述", "options": ["A选项", "B选项", "C选项", "D选项"], "answer": 0 } ]
 }`;
 
-            // 您的专属 API 密钥
+            // ⚠️ 您的专属真实密钥
             const DEEPSEEK_API_KEY = "sk-f588579c2d6a428dba13d9e89938f99f"; 
-            
-            // 如果在 Vercel 部署后依然跨域报错，可以将此处的 URL 改为 "/api/deepseek/chat/completions"
             const apiUrl = "https://api.deepseek.com/chat/completions";
 
             const payload = {
                 model: "deepseek-chat",
                 messages: [
-                    { role: "system", content: "你是一个只输出合法的 JSON 字符串的机器，严禁附带任何自然语言解释和 Markdown 代码块标记。" },
+                    { role: "system", content: "你是一个只输出合法 JSON 字符串的机器，严禁附带任何自然语言解释和 Markdown 代码块标记。" },
                     { role: "user", content: promptText }
                 ],
-                temperature: 0.3,
+                temperature: 0.3, // 保持低随机性，确保 JSON 格式稳定不出错
                 response_format: { type: "json_object" } 
             };
 
@@ -726,6 +716,7 @@ JSON 格式严格遵守如下：
             const result = await response.json();
             let resultText = result.choices[0].message.content.trim();
             
+            // 剥离偶尔可能出现的多余标记
             if (resultText.startsWith('```json')) {
                 resultText = resultText.substring(7);
                 if (resultText.endsWith('```')) { resultText = resultText.slice(0, -3); }
@@ -746,12 +737,9 @@ JSON 格式严格遵守如下：
             if (!tempParsedData) return;
             if (typeof window.saveToCloud === 'function') {
                 window.saveToCloud(tempParsedData);
-                window.showToast("✅ 产品档案及 15 道题库已同步全网！", "success");
+                window.showToast(`✅ 产品档案及 ${tempParsedData.quizQuestions.length} 道题库已强力覆盖并同步全网！`, "success");
             } else {
-                const existingIdx = window.productDatabase.findIndex(p => p.id === tempParsedData.id);
-                if (existingIdx >= 0) window.productDatabase[existingIdx] = tempParsedData;
-                else window.productDatabase.push(tempParsedData);
-                window.showToast("✅ 数据仅保存至本地浏览器", "warning");
+                window.showToast("⚠️ 未连接云端，无法保存", "error");
             }
             tempParsedData = null; dragFileName = "";
             document.getElementById('ingest-text-input').value = "";
@@ -759,22 +747,29 @@ JSON 格式严格遵守如下：
             const saveBtn = document.getElementById('btn-save-ingest');
             saveBtn.disabled = true;
             saveBtn.className = "px-5 py-3 bg-slate-800 text-slate-500 rounded-xl text-sm font-bold cursor-not-allowed transition-all w-full flex items-center justify-center";
-            document.getElementById('ai-output-box').innerHTML = `<div class="flex flex-col items-center justify-center h-full text-slate-600 py-12"><i class="fa-regular fa-circle-check text-5xl mb-3 text-brand-500/50"></i><span class="font-bold text-slate-400">档案与 15 道题库已成功发布</span></div>`;
+            document.getElementById('ai-output-box').innerHTML = `<div class="flex flex-col items-center justify-center h-full text-slate-600 py-12"><i class="fa-regular fa-circle-check text-5xl mb-3 text-brand-500/50"></i><span class="font-bold text-slate-400">档案与题库已成功发布</span></div>`;
             window.filterProducts();
             window.updateCourseSelect();
             setTimeout(() => { window.switchTab('learning'); document.getElementById('courseSelect').value = 'ALL'; window.loadCourse(); }, 1500);
         };
 
-        // --- 7. 培训中心模块 (下拉菜单与 15题 随机抽考) ---
+        // --- ★ 7. 培训中心模块 (科学大考抽题算法：每款独立抽10题后混编) ★ ---
         window.updateCourseSelect = function() {
             const select = document.getElementById('courseSelect');
             if(!select) return;
             const currentVal = select.value;
-            let html = `<option value="ALL">🌟 全系产品综合随机抽题考核 (15题)</option>`;
+            
+            // ★ 修改显示文案，提示抽题逻辑
+            let html = `<option value="ALL">🌟 全系产品综合大考卷 (每款产品各抽取 10 题混编)</option>`;
+            
+            // 下拉菜单显示去重逻辑 (确保即使数据库有残留旧数据，下拉菜单也只显示干净的名字)
+            const uniqueOptions = new Set();
+            
             if(window.productDatabase && window.productDatabase.length > 0){
                 window.productDatabase.forEach(p => {
-                    if(p.quizQuestions && p.quizQuestions.length > 0) {
-                        html += `<option value="${p.id}">📚 专项考核：${p.name}</option>`;
+                    if(p.quizQuestions && p.quizQuestions.length > 0 && !uniqueOptions.has(p.name)) {
+                        uniqueOptions.add(p.name);
+                        html += `<option value="${p.id}">📚 专项深造考核：${p.name} (${p.quizQuestions.length}题)</option>`;
                     }
                 });
             }
@@ -787,20 +782,35 @@ JSON 格式严格遵守如下：
 
         window.renderQuiz = function(courseId) {
             let questions = [];
+            
             if (courseId === 'ALL') {
                 let allQ = [];
-                (window.productDatabase || []).forEach(p => { if (p.quizQuestions) p.quizQuestions.forEach(q => allQ.push({ ...q, productName: p.name })); });
-                // ★ 综合抽考增加到 15 题
-                questions = allQ.sort(() => 0.5 - Math.random()).slice(0, 15); 
+                // 遍历全网所有产品
+                (window.productDatabase || []).forEach(p => { 
+                    if (p.quizQuestions && p.quizQuestions.length > 0) { 
+                        // 将该产品的题目先打乱
+                        let shuffledProductQs = [...p.quizQuestions].sort(() => 0.5 - Math.random());
+                        // 从该产品中最多抽取 10 道题 (不够 10 题则全拿)
+                        let selectedQs = shuffledProductQs.slice(0, 10);
+                        // 贴上产品名字签，方便在卷面上显示出处
+                        selectedQs = selectedQs.map(q => ({ ...q, productName: p.name }));
+                        // 丢入总考卷大池子
+                        allQ = allQ.concat(selectedQs);
+                    } 
+                });
+                // ★ 最后将整张大考卷打乱顺序，形成真正的混合摸底考试
+                questions = allQ.sort(() => 0.5 - Math.random()); 
             } else {
+                // 专项考核固定抽取它的全部题目
                 const product = (window.productDatabase || []).find(p => p.id === courseId);
                 questions = product && product.quizQuestions ? product.quizQuestions : [];
             }
+            
             window.currentQuiz = questions;
             const container = document.getElementById('quiz-container');
 
             if (questions.length === 0) {
-                container.innerHTML = `<div class="text-center py-12 text-slate-500 text-sm"><i class="fa-solid fa-inbox text-3xl mb-3 block opacity-50"></i>该范围暂无考题记录，请先在【AI 投喂】处生成。</div>`;
+                container.innerHTML = `<div class="text-center py-12 text-slate-500 text-sm"><i class="fa-solid fa-inbox text-3xl mb-3 block opacity-50"></i>题库为空，请先前往【AI 投喂】提取文档。</div>`;
                 document.getElementById('quiz-score').textContent = "无考题";
                 return;
             }
@@ -820,8 +830,8 @@ JSON 格式严格遵守如下：
                         </div>
                     </div>`;
             }).join('');
-            document.getElementById('quiz-score').textContent = `共 ${questions.length} 题，请作答`;
-            document.getElementById('quiz-score').className = "text-xs font-bold text-slate-400 bg-slate-800 px-3 py-1 rounded-md";
+            document.getElementById('quiz-score').textContent = `本次考核共 ${questions.length} 题`;
+            document.getElementById('quiz-score').className = "text-xs font-bold text-brand-gold bg-brand-gold/10 border border-brand-gold/20 px-3 py-1 rounded-md";
         };
 
         window.submitQuiz = function() {
@@ -851,10 +861,10 @@ JSON 格式严格遵守如下：
                 }
             });
 
-            if (!allAnswered) { window.showToast("⚠️ 判卷失败：请完成所有题目的作答！", "warning"); return; }
+            if (!allAnswered) { window.showToast("⚠️ 判卷失败：有题目漏答，请完成所有题目！", "warning"); return; }
             const score = Math.round((correctCount / window.currentQuiz.length) * 100);
             const scoreEl = document.getElementById('quiz-score');
-            scoreEl.textContent = `最终得分: ${score} 分`;
+            scoreEl.textContent = `最终成绩: ${score} 分`;
             if (score >= 80) {
                 scoreEl.className = "text-xs font-bold text-white bg-brand-500 px-3 py-1 rounded-md shadow-[0_0_8px_rgba(16,185,129,0.5)]";
                 window.showToast(`🎉 考核高分通过！得分：${score} 分`, "success");

@@ -73,7 +73,7 @@
 
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
-        <!-- 视图 1：产品参数速查 (纯技术展示，无价格) -->
+        <!-- 视图 1：产品参数速查 -->
         <section id="view-catalog" class="space-y-6 block">
             <div class="glass-panel p-5 rounded-2xl space-y-4">
                 <div class="flex flex-col md:flex-row gap-4">
@@ -114,22 +114,19 @@
             <div class="glass-panel p-6 rounded-2xl space-y-6">
                 <div>
                     <h2 class="text-xl font-bold text-white flex items-center gap-2"><i class="fa-solid fa-wand-magic-sparkles text-brand-gold"></i> 文档智能解析与题库大裂变</h2>
-                    <p class="text-sm text-slate-400 mt-1">支持直接拖拽 PDF、Word、PPTX 或 TXT 文件！AI 将自动读取内容，生成产品档案并裂变出 5 道实战不重复考题。</p>
+                    <p class="text-sm text-slate-400 mt-1">支持拖拽 PDF、Word、PPTX 或 TXT！AI 将自动提取内容，生成档案并裂变出 <span class="text-brand-500 font-bold">15 道实战考题</span>。</p>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div class="space-y-4">
-                        <!-- 隐藏的 file input，支持点击上传 -->
                         <input type="file" id="file-upload" class="hidden" accept=".pdf,.doc,.docx,.pptx,.txt" onchange="handleFileSelect(event)">
                         
-                        <!-- 交互式拖拽区 -->
                         <div id="drop-zone" onclick="triggerFileInput()" class="border-2 border-dashed border-slate-700 hover:border-brand-500 bg-slate-900/50 hover:bg-brand-500/10 rounded-2xl p-6 flex flex-col items-center justify-center text-center transition-all relative group h-36 cursor-pointer" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
                             <i class="fa-solid fa-file-powerpoint text-3xl text-slate-500 group-hover:text-brand-500 mb-2 transition-colors"></i>
                             <h3 class="text-sm font-bold text-slate-200" id="file-name-display">拖拽或点击上传文件 (PDF / Word / PPTX / TXT)</h3>
-                            <p class="text-[10px] text-brand-gold mt-2 bg-brand-gold/10 px-2 py-1 rounded">✨ 满血版：系统将在本地极速读取内部长文稿！</p>
+                            <p class="text-[10px] text-brand-gold mt-2 bg-brand-gold/10 px-2 py-1 rounded">✨ 智能防重覆盖版：自动识别相同型号并更新题库！</p>
                         </div>
                         
-                        <!-- 文本输入区 -->
                         <div>
                             <div class="flex items-center justify-between mb-2">
                                 <label class="text-xs text-slate-400 font-bold"><i class="fa-solid fa-keyboard mr-1 text-brand-accent"></i> 核心文稿展示区（可校对修改）</label>
@@ -138,11 +135,10 @@
                         </div>
                         
                         <button onclick="startAIParsing()" id="btn-parse-ai" class="w-full py-3 bg-gradient-to-r from-brand-600 to-brand-accent hover:from-brand-500 hover:to-brand-accent text-white font-medium text-sm rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-bolt"></i> 启动 AI 深度解析与出题
+                            <i class="fa-solid fa-bolt"></i> 启动 AI 深度解析与出题 (15题)
                         </button>
                     </div>
 
-                    <!-- AI 提取结果与同步区 -->
                     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col">
                         <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
                             <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2"><i class="fa-solid fa-microchip text-brand-500"></i> AI 解析与题库裂变预览</h3>
@@ -151,7 +147,7 @@
                         <div id="ai-output-box" class="flex-1 space-y-3 text-xs text-slate-400 overflow-y-auto max-h-[400px] custom-scrollbar pr-2 relative">
                             <div class="flex flex-col items-center justify-center h-full text-slate-600 py-12">
                                 <i class="fa-solid fa-file-pdf text-4xl mb-3"></i>
-                                <span class="text-center px-4">拖入文档并点击解析，AI将在此展示<br>产品档案及 5 道实战考题。</span>
+                                <span class="text-center px-4">拖入文档并点击解析，AI将在此展示<br>产品档案及 15 道实战考题。</span>
                             </div>
                         </div>
                         <div class="border-t border-slate-800 pt-4 mt-4 flex justify-end">
@@ -410,7 +406,7 @@
             if(activeMBtn) activeMBtn.classList.add('text-brand-500'), activeMBtn.classList.remove('text-slate-500');
         };
 
-        // --- 4. 渲染纯技术产品卡片 (无价格) ---
+        // --- 4. 渲染纯技术产品卡片 ---
         window.renderProductGrid = function(products) {
             const grid = document.getElementById('product-grid');
             document.getElementById('product-count').textContent = products.length;
@@ -512,7 +508,6 @@
             if(file) await readFile(file);
         };
 
-        // 核心：在浏览器本地直接读取文件内容 (PDF / Word / PPTX / TXT)
         async function readFile(file) {
             dragFileName = file.name;
             const displayEl = document.getElementById('file-name-display');
@@ -528,8 +523,7 @@
 
                 if (fileExt === 'txt') {
                     extractedText = await file.text();
-                } 
-                else if (fileExt === 'pdf') {
+                } else if (fileExt === 'pdf') {
                     const arrayBuffer = await file.arrayBuffer();
                     const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
                     for (let i = 1; i <= pdf.numPages; i++) {
@@ -537,36 +531,30 @@
                         const textContent = await page.getTextContent();
                         extractedText += textContent.items.map(item => item.str).join(' ') + "\n";
                     }
-                } 
-                else if (fileExt === 'doc' || fileExt === 'docx') {
+                } else if (fileExt === 'doc' || fileExt === 'docx') {
                     const arrayBuffer = await file.arrayBuffer();
                     const result = await mammoth.extractRawText({arrayBuffer: arrayBuffer});
                     extractedText = result.value;
-                } 
-                else if (fileExt === 'pptx') {
+                } else if (fileExt === 'pptx') {
                     const arrayBuffer = await file.arrayBuffer();
                     const zip = await JSZip.loadAsync(arrayBuffer);
                     let slideTexts = [];
-                    // 找出 PPT 压缩包内所有的幻灯片 XML 文件
                     const slideFiles = Object.keys(zip.files).filter(name => /^ppt\/slides\/slide\d+\.xml$/.test(name));
-                    // 按照幻灯片 1, 2, 3... 的顺序排序
                     slideFiles.sort((a, b) => parseInt(a.match(/\d+/)[0]) - parseInt(b.match(/\d+/)[0]));
                     
                     for (const fileName of slideFiles) {
                         const xmlContent = await zip.file(fileName).async("string");
-                        // 使用正则提取 XML 中所有 <a:t> 文本节点里的真实文字
                         const textMatches = xmlContent.match(/<a:t[^>]*>.*?<\/a:t>/g) || [];
                         const slideText = textMatches.map(tag => tag.replace(/<[^>]+>/g, '')).join(' ');
                         if (slideText.trim()) slideTexts.push(slideText);
                     }
                     extractedText = slideTexts.join('\n\n');
-                } 
-                else {
+                } else {
                     throw new Error("暂不支持该文件格式，请上传 PDF、Word(docx)、PPTX 或 TXT 文件。");
                 }
 
                 if (!extractedText || extractedText.trim() === "") {
-                     throw new Error("未能从文件中读取到文字，可能是纯图片扫描版。建议您手动复制核心文字粘贴到文本框。");
+                     throw new Error("未能从文件中读取到文字。");
                 }
 
                 textArea.value = extractedText.trim();
@@ -583,6 +571,12 @@
             }
         }
 
+        // 精准提取产品型号核心字符串 (如 "NFC9197", "9826H") 用于防重复
+        function extractModelNumber(text) {
+            const match = text.match(/[A-Za-z0-9]{4,}/);
+            return match ? match[0].toUpperCase() : text.trim().toUpperCase();
+        }
+
         window.startAIParsing = async function() {
             const textContent = document.getElementById('ingest-text-input').value.trim();
             if(!textContent) {
@@ -592,30 +586,36 @@
 
             const btn = document.getElementById('btn-parse-ai');
             const originalBtnHtml = btn.innerHTML;
-            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> AI 正在深度阅读并裂变题库中...`;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> AI 正在深度阅读并裂变 15 道题库中...`;
             btn.disabled = true;
             document.getElementById('ai-status-tag').textContent = "DeepSeek 解析中...";
             document.getElementById('ai-status-tag').className = "text-[10px] px-2 py-0.5 rounded bg-brand-gold/20 text-brand-gold font-bold border border-brand-gold/30 animate-pulse";
             document.getElementById('ai-output-box').innerHTML = `
                 <div class="flex flex-col items-center justify-center h-full text-slate-400 py-10 space-y-4">
                     <div class="w-16 h-16 rounded-full border-4 border-slate-800 border-t-brand-500 animate-spin"></div>
-                    <p class="text-xs text-brand-500 mt-2">国内 AI 引擎正在深度阅读，强制拆分 5 道不重复考题...</p>
+                    <p class="text-xs text-brand-500 mt-2">正在进行 15 题大容量题库裂变，可能需要 15-20 秒，请耐心等待...</p>
                 </div>`;
 
             try {
                 const parsedResult = await callDeepSeekAPI(textContent, dragFileName);
                 if(!parsedResult || !parsedResult.name) throw new Error("解析格式错误");
 
-                // 智能同名判断覆盖
+                // ★ 强化查重与覆盖逻辑：通过核心型号智能比对
                 let isExisting = false;
                 let finalId = "ai-product-" + Date.now();
                 let productCode = parsedResult.code || `OK-${parsedResult.name.split(' ')[0]}`;
-                const nameToMatch = parsedResult.name.toLowerCase();
+                
+                const incomingModel = extractModelNumber(parsedResult.name); // 比如提取出 "NFC9197"
                 
                 if(window.productDatabase && window.productDatabase.length > 0) {
-                    const existProduct = window.productDatabase.find(p => nameToMatch.includes(p.name.toLowerCase()) || p.name.toLowerCase().includes(nameToMatch));
+                    const existProduct = window.productDatabase.find(p => {
+                        const pModel = extractModelNumber(p.name);
+                        return pModel === incomingModel || (p.code && parsedResult.code && p.code === parsedResult.code);
+                    });
                     if(existProduct) {
-                        isExisting = true; finalId = existProduct.id; productCode = existProduct.code || productCode;
+                        isExisting = true; 
+                        finalId = existProduct.id; 
+                        productCode = existProduct.code || productCode;
                     }
                 }
 
@@ -641,7 +641,7 @@
                         <div class="flex justify-between items-start">
                             <span class="font-bold text-white text-sm">${tempParsedData.name}</span>
                             <span class="text-[9px] ${isExisting ? 'bg-brand-gold/20 text-brand-gold' : 'bg-brand-500/20 text-brand-500'} px-1.5 py-0.5 rounded">
-                                ${isExisting ? '发现重名·将覆盖旧档' : '全新产品档案'}
+                                ${isExisting ? `检测到同型号(${incomingModel})·将完美覆盖更新` : '全新产品档案'}
                             </span>
                         </div>
                         <div class="grid grid-cols-2 gap-2 mt-2 text-[10px] text-slate-400">
@@ -669,9 +669,9 @@
             }
         };
 
-        // --- ★ 核心升级：DeepSeek 引擎直连 (强制 JSON 格式) ★ ---
+        // --- ★ 核心升级：15道题强制指令 & 专属 API 密钥 ★ ---
         async function callDeepSeekAPI(text, fileName) {
-            const promptText = `你是海洋王工业照明领域的资深技术支持与培训出题专家。请根据以下输入（包含文件名和文本段落），提炼该灯具产品的核心信息，并**自动生成用于销售培训的实战单选题**。
+            const promptText = `你是海洋王工业照明领域的资深技术支持与培训出题专家。请根据以下输入，提炼该灯具产品的核心信息，并**自动生成用于销售培训的实战单选题**。
 
 输入信息：
 文件名：${fileName || '无'}
@@ -680,9 +680,9 @@
 处理要求：
 1. 提取或推断：产品名称、产品订货编码（若无则推测）、分类（平台灯/高顶灯/防爆灯等）、功率、光效、防护/防腐等级、重量。
 2. 提炼：3-5 条核心优势亮点（features）和 1 条针对竞品的打法或控标点（pkPoint）。
-3. 智能出题（★绝对禁止重复★）：请**固定生成 5 道完全不同维度**的单项选择题。
-   - 必须严格涵盖以下不同维度：① 核心参数数值记忆、② 独特结构优势（如散热/防潮设计）、③ 竞品劣势打击/控标点、④ 目标应用场景（如炼钢/皮带通廊）。
-   - 警告：**5道题目的考点必须完全独立，绝不能出现换汤不换药的重复提问！** 选项要有实战迷惑性。
+3. 智能出题（★绝对禁止重复★）：请**固定生成 15 道完全不同维度**的单项选择题。
+   - 必须严格涵盖以下5个不同维度：① 核心参数数值记忆、② 独特结构优势（如散热/防潮设计）、③ 竞品劣势打击/控标点、④ 目标应用场景（如炼钢/皮带通廊）、⑤ 安装与维护注意事项。
+   - 警告：**15道题目的考点必须完全独立，绝不能出现换汤不换药的重复提问！** 选项要有强烈的实战迷惑性。
 
 输出格式：请务必只输出一段合法的 JSON 字符串，不要包含任何 markdown 语法（如 \`\`\`json ），确保可以直接被 JSON.parse 解析。
 JSON 格式严格遵守如下：
@@ -692,12 +692,11 @@ JSON 格式严格遵守如下：
   "questions": [ { "question": "问题描述", "options": ["A选项", "B选项", "C选项", "D选项"], "answer": 0 } ]
 }`;
 
-            // =========================================================
-            // ⚠️ 极其重要：请在这里填入您在 DeepSeek 申请的 API 密钥！
-            // =========================================================
-const DEEPSEEK_API_KEY = "sk-f588579c2d6a428dba13d9e89938f99f"; 
-// ★ 使用 Vercel 反向代理地址，绕过浏览器的跨域拦截
-const apiUrl = "/api/deepseek/chat/completions";
+            // 您的专属 API 密钥
+            const DEEPSEEK_API_KEY = "sk-f588579c2d6a428dba13d9e89938f99f"; 
+            
+            // 如果在 Vercel 部署后依然跨域报错，可以将此处的 URL 改为 "/api/deepseek/chat/completions"
+            const apiUrl = "https://api.deepseek.com/chat/completions";
 
             const payload = {
                 model: "deepseek-chat",
@@ -706,7 +705,7 @@ const apiUrl = "/api/deepseek/chat/completions";
                     { role: "user", content: promptText }
                 ],
                 temperature: 0.3,
-                response_format: { type: "json_object" } // 强制要求 JSON 返回
+                response_format: { type: "json_object" } 
             };
 
             const response = await fetch(apiUrl, { 
@@ -727,7 +726,6 @@ const apiUrl = "/api/deepseek/chat/completions";
             const result = await response.json();
             let resultText = result.choices[0].message.content.trim();
             
-            // 安全清洗：剔除偶尔可能出现的 Markdown 标记
             if (resultText.startsWith('```json')) {
                 resultText = resultText.substring(7);
                 if (resultText.endsWith('```')) { resultText = resultText.slice(0, -3); }
@@ -748,7 +746,7 @@ const apiUrl = "/api/deepseek/chat/completions";
             if (!tempParsedData) return;
             if (typeof window.saveToCloud === 'function') {
                 window.saveToCloud(tempParsedData);
-                window.showToast("✅ 产品档案及题库已同步全网！", "success");
+                window.showToast("✅ 产品档案及 15 道题库已同步全网！", "success");
             } else {
                 const existingIdx = window.productDatabase.findIndex(p => p.id === tempParsedData.id);
                 if (existingIdx >= 0) window.productDatabase[existingIdx] = tempParsedData;
@@ -761,18 +759,18 @@ const apiUrl = "/api/deepseek/chat/completions";
             const saveBtn = document.getElementById('btn-save-ingest');
             saveBtn.disabled = true;
             saveBtn.className = "px-5 py-3 bg-slate-800 text-slate-500 rounded-xl text-sm font-bold cursor-not-allowed transition-all w-full flex items-center justify-center";
-            document.getElementById('ai-output-box').innerHTML = `<div class="flex flex-col items-center justify-center h-full text-slate-600 py-12"><i class="fa-regular fa-circle-check text-5xl mb-3 text-brand-500/50"></i><span class="font-bold text-slate-400">数据与题库已成功发布</span></div>`;
+            document.getElementById('ai-output-box').innerHTML = `<div class="flex flex-col items-center justify-center h-full text-slate-600 py-12"><i class="fa-regular fa-circle-check text-5xl mb-3 text-brand-500/50"></i><span class="font-bold text-slate-400">档案与 15 道题库已成功发布</span></div>`;
             window.filterProducts();
             window.updateCourseSelect();
             setTimeout(() => { window.switchTab('learning'); document.getElementById('courseSelect').value = 'ALL'; window.loadCourse(); }, 1500);
         };
 
-        // --- 7. 培训中心模块 (下拉菜单与随机抽题) ---
+        // --- 7. 培训中心模块 (下拉菜单与 15题 随机抽考) ---
         window.updateCourseSelect = function() {
             const select = document.getElementById('courseSelect');
             if(!select) return;
             const currentVal = select.value;
-            let html = `<option value="ALL">🌟 全系产品综合随机抽题考核 (限5题)</option>`;
+            let html = `<option value="ALL">🌟 全系产品综合随机抽题考核 (15题)</option>`;
             if(window.productDatabase && window.productDatabase.length > 0){
                 window.productDatabase.forEach(p => {
                     if(p.quizQuestions && p.quizQuestions.length > 0) {
@@ -792,7 +790,8 @@ const apiUrl = "/api/deepseek/chat/completions";
             if (courseId === 'ALL') {
                 let allQ = [];
                 (window.productDatabase || []).forEach(p => { if (p.quizQuestions) p.quizQuestions.forEach(q => allQ.push({ ...q, productName: p.name })); });
-                questions = allQ.sort(() => 0.5 - Math.random()).slice(0, 5); // 随机抽取5题
+                // ★ 综合抽考增加到 15 题
+                questions = allQ.sort(() => 0.5 - Math.random()).slice(0, 15); 
             } else {
                 const product = (window.productDatabase || []).find(p => p.id === courseId);
                 questions = product && product.quizQuestions ? product.quizQuestions : [];

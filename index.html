@@ -82,7 +82,6 @@
                         <input type="text" id="searchInput" oninput="filterProducts()" placeholder="支持模糊查询：输入型号 (如 BPC8767, NGC9828)、编码、功率或卖点..." class="w-full pl-11 pr-4 py-3 bg-slate-900/90 border border-slate-700 rounded-xl focus:outline-none focus:border-brand-500 text-white placeholder-slate-500 text-sm shadow-inner transition-all">
                     </div>
                     <div class="flex items-center gap-2">
-                        <!-- ★ 升级分类下拉框 ★ -->
                         <select id="categoryFilter" onchange="filterProducts()" class="bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-brand-500 w-32 md:w-auto">
                             <option value="ALL">全部分类</option>
                             <option value="防爆">🛡️ 防爆灯具 (B系列/8xxx)</option>
@@ -324,7 +323,10 @@
                 
                 // 云端删除功能（用于清理冗余数据）
                 window.deleteProduct = async function(productId, productName) {
-                    if(!confirm(`⚠️ 危险操作：确定要从全网永久删除【${productName}】吗？\n此操作不可恢复！`)) return;                     try {                         await deleteDoc(doc(productsCollection, productId));                         window.showToast(`已成功删除产品：${productName}`, "success");
+                    if(!confirm(`⚠️ 危险操作：确定要从全网永久删除【${productName}】吗？\n此操作不可恢复！`)) return;
+                    try {
+                        await deleteDoc(doc(productsCollection, productId));
+                        window.showToast(`已成功删除产品：${productName}`, "success");
                     } catch(err) {
                         console.error("删除失败:", err);
                         window.showToast("删除失败，请重试", "error");
@@ -381,10 +383,16 @@
 
         window.switchTab = function(tab) {
             ['catalog', 'ingest', 'learning'].forEach(t => {
-                document.getElementById(`view-${t}`).classList.add('hidden');                 const btn = document.getElementById(`tab-btn-${t}`);
+                document.getElementById(`view-${t}`).classList.add('hidden');
+                const btn = document.getElementById(`tab-btn-${t}`);
                 if(btn) btn.classList.remove('bg-brand-600', 'text-white', 'shadow-md'), btn.classList.add('text-slate-400');
-                const mBtn = document.getElementById(`mobile-tab-${t}`);                 if(mBtn) mBtn.classList.remove('text-brand-500'), mBtn.classList.add('text-slate-500');             });             document.getElementById(`view-${tab}`).classList.remove('hidden');
-            const activeBtn = document.getElementById(`tab-btn-${tab}`);             if(activeBtn) activeBtn.classList.add('bg-brand-600', 'text-white', 'shadow-md'), activeBtn.classList.remove('text-slate-400');             const activeMBtn = document.getElementById(`mobile-tab-${tab}`);
+                const mBtn = document.getElementById(`mobile-tab-${t}`);
+                if(mBtn) mBtn.classList.remove('text-brand-500'), mBtn.classList.add('text-slate-500');
+            });
+            document.getElementById(`view-${tab}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-btn-${tab}`);
+            if(activeBtn) activeBtn.classList.add('bg-brand-600', 'text-white', 'shadow-md'), activeBtn.classList.remove('text-slate-400');
+            const activeMBtn = document.getElementById(`mobile-tab-${tab}`);
             if(activeMBtn) activeMBtn.classList.add('text-brand-500'), activeMBtn.classList.remove('text-slate-500');
         };
 
@@ -426,16 +434,27 @@
             `).join('');
         };
 
+        // ★ 核心修复：防爆灯具下拉过滤互斥算法 ★
         window.filterProducts = function() {
             const query = document.getElementById('searchInput').value.trim().toLowerCase();
             const category = document.getElementById('categoryFilter').value;
             const filtered = window.productDatabase.filter(p => {
-                const matchCat = (category === 'ALL' || (p.category && p.category.includes(category)));
+                let matchCat = false;
+                if (category === 'ALL') {
+                    matchCat = true;
+                } else if (category === '防爆') {
+                    // 当下拉选择防爆时，必须包含“防爆”且绝不能包含“非防爆”
+                    matchCat = p.category && p.category.includes('防爆') && !p.category.includes('非防爆');
+                } else {
+                    matchCat = p.category && p.category.includes(category);
+                }
+                
                 const matchQuery = !query || p.name.toLowerCase().includes(query) || (p.code && p.code.toLowerCase().includes(query)) || p.wattage.toLowerCase().includes(query) || p.protection.toLowerCase().includes(query) || (p.features && p.features.some(f => f.toLowerCase().includes(query)));
                 return matchCat && matchQuery;
             });
             window.renderProductGrid(filtered);
         };
+        
         window.quickSearch = function(tag) { document.getElementById('searchInput').value = tag; window.filterProducts(); };
         window.resetSearch = function() { document.getElementById('searchInput').value = ''; document.getElementById('categoryFilter').value = 'ALL'; window.filterProducts(); };
 
@@ -551,7 +570,7 @@
             }
         }
 
-        // ★ 核心升级 1：精准前缀分类算法 ★
+        // ★ 核心前缀分类算法 ★
         function autoCategorize(name, code, filename) {
             const str = (name + " " + (code||"") + " " + (filename||"")).toUpperCase();
             
@@ -624,7 +643,7 @@
                 const parsedResult = await callDeepSeekAPI(textContent, dragFileName);
                 if(!parsedResult || !parsedResult.name) throw new Error("解析格式错误");
 
-                // ★ 核心升级 2：以文件名为绝对依据的覆盖逻辑
+                // ★ 以文件名为绝对依据的覆盖逻辑
                 let cleanFileName = dragFileName ? dragFileName.replace(/\.[^/.]+$/, "").replace(/\(\d+\)/g, "").trim() : "";
                 let identifier = cleanFileName || parsedResult.name;
                 const finalId = "ok_prod_" + identifier.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "_");
@@ -769,7 +788,7 @@ JSON 格式严格遵守如下：
             setTimeout(() => { window.switchTab('learning'); document.getElementById('courseSelect').value = 'ALL'; window.loadCourse(); }, 1500);
         };
 
-        // --- ★ 核心升级 3：综合大考抽题算法（各产品抽10题后混编） ★ ---
+        // --- ★ 综合大考抽题算法（各产品抽10题后混编） ★ ---
         window.updateCourseSelect = function() {
             const select = document.getElementById('courseSelect');
             if(!select) return;

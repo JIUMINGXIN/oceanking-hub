@@ -79,24 +79,27 @@
                 <div class="flex flex-col md:flex-row gap-4">
                     <div class="relative flex-1">
                         <i class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" id="searchInput" oninput="filterProducts()" placeholder="支持模糊查询：输入型号 (如 9197)、编码、功率、防护等级或关键字..." class="w-full pl-11 pr-4 py-3 bg-slate-900/90 border border-slate-700 rounded-xl focus:outline-none focus:border-brand-500 text-white placeholder-slate-500 text-sm shadow-inner transition-all">
+                        <input type="text" id="searchInput" oninput="filterProducts()" placeholder="支持模糊查询：输入型号 (如 BPC8767, NGC9828)、编码、功率或卖点..." class="w-full pl-11 pr-4 py-3 bg-slate-900/90 border border-slate-700 rounded-xl focus:outline-none focus:border-brand-500 text-white placeholder-slate-500 text-sm shadow-inner transition-all">
                     </div>
                     <div class="flex items-center gap-2">
+                        <!-- ★ 升级分类下拉框 ★ -->
                         <select id="categoryFilter" onchange="filterProducts()" class="bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-brand-500 w-32 md:w-auto">
                             <option value="ALL">全部分类</option>
-                            <option value="平台灯">平台灯/通路灯</option>
-                            <option value="高顶灯">高顶灯/工矿灯</option>
-                            <option value="防爆灯">防爆照明</option>
+                            <option value="防爆">🛡️ 防爆灯具 (B系列/8xxx)</option>
+                            <option value="非防爆">🏭 非防爆固定灯 (N系列/9xxx)</option>
+                            <option value="高顶灯">💡 高顶灯系列 (含NGC/BGC等)</option>
+                            <option value="平台灯">🏮 平台灯系列 (含BPC/NPC等)</option>
+                            <option value="便携">🔋 便携/工作灯 (含J/R/5/7xxx)</option>
+                            <option value="移动">🚗 移动/升降灯 (含S/Y/6xxx)</option>
                         </select>
                         <button onclick="resetSearch()" class="px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm transition-colors border border-slate-700 whitespace-nowrap">重置</button>
                     </div>
                 </div>
                 <div class="flex flex-wrap items-center gap-2 text-xs text-slate-400 hidden sm:flex">
                     <span class="text-slate-500"><i class="fa-solid fa-tags mr-1"></i>快捷搜索：</span>
-                    <button onclick="quickSearch('NFC9197')" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700">NFC9197</button>
-                    <button onclick="quickSearch('NGC9828')" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700">NGC9828</button>
-                    <button onclick="quickSearch('呼吸阀')" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700">呼吸阀</button>
-                    <button onclick="quickSearch('180lm/W')" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700">高光效</button>
+                    <button onclick="quickSearch('BPC')" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700">BPC防爆平台灯</button>
+                    <button onclick="quickSearch('NGC')" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700">NGC非防爆高顶灯</button>
+                    <button onclick="quickSearch('NFC')" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700">NFC非防爆平台灯</button>
                 </div>
             </div>
 
@@ -115,7 +118,7 @@
             <div class="glass-panel p-6 rounded-2xl space-y-6">
                 <div>
                     <h2 class="text-xl font-bold text-white flex items-center gap-2"><i class="fa-solid fa-wand-magic-sparkles text-brand-gold"></i> 文档智能解析与题库大裂变</h2>
-                    <p class="text-sm text-slate-400 mt-1">支持拖拽 PDF、Word、PPTX 或 TXT！AI 将自动提取内容，生成档案并根据内容量裂变出 <span class="text-brand-500 font-bold">至少 15 道 (上不封顶)</span> 的实战考题。</p>
+                    <p class="text-sm text-slate-400 mt-1">支持拖拽 PDF、Word、PPTX 或 TXT！系统将自动识别型号前缀 (如BPC/NGC)，并裂变出 <span class="text-brand-500 font-bold">至少 15 道 (上不封顶)</span> 的实战考题。</p>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -125,7 +128,7 @@
                         <div id="drop-zone" onclick="triggerFileInput()" class="border-2 border-dashed border-slate-700 hover:border-brand-500 bg-slate-900/50 hover:bg-brand-500/10 rounded-2xl p-6 flex flex-col items-center justify-center text-center transition-all relative group h-36 cursor-pointer" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
                             <i class="fa-solid fa-file-powerpoint text-3xl text-slate-500 group-hover:text-brand-500 mb-2 transition-colors"></i>
                             <h3 class="text-sm font-bold text-slate-200" id="file-name-display">拖拽或点击上传文件 (PDF / Word / PPTX / TXT)</h3>
-                            <p class="text-[10px] text-brand-gold mt-2 bg-brand-gold/10 px-2 py-1 rounded">✨ 强力除重版：系统将根据灯具核心型号自动覆盖更新旧数据！</p>
+                            <p class="text-[10px] text-brand-gold mt-2 bg-brand-gold/10 px-2 py-1 rounded">✨ 绝对覆盖版：同名文件或同型号重新投喂，将100%覆盖旧数据！</p>
                         </div>
                         
                         <div>
@@ -136,7 +139,7 @@
                         </div>
                         
                         <button onclick="startAIParsing()" id="btn-parse-ai" class="w-full py-3 bg-gradient-to-r from-brand-600 to-brand-accent hover:from-brand-500 hover:to-brand-accent text-white font-medium text-sm rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-bolt"></i> 启动 AI 深度解析与出题 (最少15题+)
+                            <i class="fa-solid fa-bolt"></i> 启动 AI 深度解析与出题 (最少15题起)
                         </button>
                     </div>
 
@@ -148,7 +151,7 @@
                         <div id="ai-output-box" class="flex-1 space-y-3 text-xs text-slate-400 overflow-y-auto max-h-[400px] custom-scrollbar pr-2 relative">
                             <div class="flex flex-col items-center justify-center h-full text-slate-600 py-12">
                                 <i class="fa-solid fa-file-pdf text-4xl mb-3"></i>
-                                <span class="text-center px-4">拖入文档并点击解析，AI将在此展示<br>产品档案及生成的实战不重复考题。</span>
+                                <span class="text-center px-4">拖入文档并点击解析，AI将在此展示<br>产品前缀智能标签及生成的实战考题。</span>
                             </div>
                         </div>
                         <div class="border-t border-slate-800 pt-4 mt-4 flex justify-end">
@@ -288,7 +291,6 @@
             appId: "1:365693449353:web:6320d3c4ef2c5bede74258",
             measurementId: "G-YY2SG17S62"
         };
-        // ==========================================
 
         const updateCloudUI = (status, colorClass, dotColor) => {
             const statusEl = document.getElementById('cloud-status');
@@ -304,7 +306,6 @@
             const db = getFirestore(app);
             const auth = getAuth(app);
 
-            // 使用匿名登录获取读写权限
             signInAnonymously(auth).then(() => {
                 updateCloudUI("云端实时同步中", "brand-500", "brand-500");
                 const productsCollection = collection(db, 'artifacts', 'oceanking-hub', 'public', 'data', 'products');
@@ -321,12 +322,9 @@
                     }
                 };
                 
-                // 云端删除功能（用于清理截图里的脏数据）
+                // 云端删除功能（用于清理冗余数据）
                 window.deleteProduct = async function(productId, productName) {
-                    if(!confirm(`⚠️ 危险操作：确定要从全网永久删除【${productName}】吗？\n此操作不可恢复！`)) return;
-                    try {
-                        await deleteDoc(doc(productsCollection, productId));
-                        window.showToast(`已成功删除产品：${productName}`, "success");
+                    if(!confirm(`⚠️ 危险操作：确定要从全网永久删除【${productName}】吗？\n此操作不可恢复！`)) return;                     try {                         await deleteDoc(doc(productsCollection, productId));                         window.showToast(`已成功删除产品：${productName}`, "success");
                     } catch(err) {
                         console.error("删除失败:", err);
                         window.showToast("删除失败，请重试", "error");
@@ -338,7 +336,7 @@
                     let cloudProducts = [];
                     snapshot.forEach((docSnap) => { cloudProducts.push(docSnap.data()); });
                     
-                    window.productDatabase = cloudProducts; // 永远以云端真实数据为准
+                    window.productDatabase = cloudProducts; 
                     
                     window.filterProducts();
                     if(window.updateCourseSelect) window.updateCourseSelect();
@@ -364,18 +362,14 @@
         window.showToast = function(message, type = "success") {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            
             let icon = type === "success" ? '<i class="fa-solid fa-circle-check text-brand-500"></i>' : (type === "warning" ? '<i class="fa-solid fa-circle-exclamation text-brand-gold"></i>' : '<i class="fa-solid fa-circle-xmark text-red-500"></i>');
             let bgClass = type === "success" ? 'border-brand-500/30 bg-brand-500/10' : (type === "warning" ? 'border-brand-gold/30 bg-brand-gold/10' : 'border-red-500/30 bg-red-500/10');
-            
             toast.className = `toast-enter flex items-center gap-3 px-4 py-3 rounded-xl border ${bgClass} backdrop-blur-md text-white shadow-lg text-sm z-50`;
             toast.innerHTML = `${icon} <span>${message}</span>`;
-            
             container.appendChild(toast);
             setTimeout(() => { toast.classList.replace('toast-enter', 'toast-exit'); setTimeout(() => toast.remove(), 300); }, 3500);
         };
 
-        // --- 2. 初始预置本地数据 (空数组，强依赖云端) ---
         window.productDatabase = [];
         let tempParsedData = null; 
         let dragFileName = "";
@@ -385,23 +379,15 @@
             window.updateCourseSelect();
         });
 
-        // --- 3. 选项卡切换 ---
         window.switchTab = function(tab) {
             ['catalog', 'ingest', 'learning'].forEach(t => {
-                document.getElementById(`view-${t}`).classList.add('hidden');
-                const btn = document.getElementById(`tab-btn-${t}`);
+                document.getElementById(`view-${t}`).classList.add('hidden');                 const btn = document.getElementById(`tab-btn-${t}`);
                 if(btn) btn.classList.remove('bg-brand-600', 'text-white', 'shadow-md'), btn.classList.add('text-slate-400');
-                const mBtn = document.getElementById(`mobile-tab-${t}`);
-                if(mBtn) mBtn.classList.remove('text-brand-500'), mBtn.classList.add('text-slate-500');
-            });
-            document.getElementById(`view-${tab}`).classList.remove('hidden');
-            const activeBtn = document.getElementById(`tab-btn-${tab}`);
-            if(activeBtn) activeBtn.classList.add('bg-brand-600', 'text-white', 'shadow-md'), activeBtn.classList.remove('text-slate-400');
-            const activeMBtn = document.getElementById(`mobile-tab-${tab}`);
+                const mBtn = document.getElementById(`mobile-tab-${t}`);                 if(mBtn) mBtn.classList.remove('text-brand-500'), mBtn.classList.add('text-slate-500');             });             document.getElementById(`view-${tab}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-btn-${tab}`);             if(activeBtn) activeBtn.classList.add('bg-brand-600', 'text-white', 'shadow-md'), activeBtn.classList.remove('text-slate-400');             const activeMBtn = document.getElementById(`mobile-tab-${tab}`);
             if(activeMBtn) activeMBtn.classList.add('text-brand-500'), activeMBtn.classList.remove('text-slate-500');
         };
 
-        // --- 4. 渲染纯技术产品卡片 (含删除按钮) ---
         window.renderProductGrid = function(products) {
             const grid = document.getElementById('product-grid');
             document.getElementById('product-count').textContent = products.length;
@@ -411,11 +397,9 @@
             }
             grid.innerHTML = products.map(p => `
                 <div class="bg-slate-900/90 border border-slate-800 hover:border-brand-500/50 rounded-2xl p-5 space-y-4 transition-all duration-300 hover:-translate-y-1 flex flex-col group relative">
-                    <!-- ★ 隐藏的删除按钮，用于清理冗余旧数据 -->
                     <button onclick="deleteProduct('${p.id}', '${p.name}')" title="删除废弃卡片" class="absolute top-4 right-4 text-slate-600 hover:text-red-500 transition-colors z-10 bg-slate-950 p-1.5 rounded border border-slate-800 hover:border-red-500/30">
                         <i class="fa-solid fa-trash-can"></i>
                     </button>
-                    
                     <div class="flex items-start justify-between gap-2 pr-8">
                         <span class="px-2.5 py-1 rounded-md text-[10px] font-bold bg-brand-500/10 text-brand-500 border border-brand-500/20">${p.category}</span>${p.code ? `<span class="text-[10px] text-slate-500 font-mono bg-slate-950 px-2 py-0.5 rounded border border-slate-800">${p.code}</span>` : ''}
                     </div>
@@ -446,7 +430,7 @@
             const query = document.getElementById('searchInput').value.trim().toLowerCase();
             const category = document.getElementById('categoryFilter').value;
             const filtered = window.productDatabase.filter(p => {
-                const matchCat = (category === 'ALL' || p.category === category);
+                const matchCat = (category === 'ALL' || (p.category && p.category.includes(category)));
                 const matchQuery = !query || p.name.toLowerCase().includes(query) || (p.code && p.code.toLowerCase().includes(query)) || p.wattage.toLowerCase().includes(query) || p.protection.toLowerCase().includes(query) || (p.features && p.features.some(f => f.toLowerCase().includes(query)));
                 return matchCat && matchQuery;
             });
@@ -455,7 +439,6 @@
         window.quickSearch = function(tag) { document.getElementById('searchInput').value = tag; window.filterProducts(); };
         window.resetSearch = function() { document.getElementById('searchInput').value = ''; document.getElementById('categoryFilter').value = 'ALL'; window.filterProducts(); };
 
-        // --- 5. 产品详情模态框 ---
         window.openProductModal = function(productId) {
             const product = window.productDatabase.find(p => p.id === productId);
             if (!product) return;
@@ -494,13 +477,10 @@
             setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); }, 300);
         };
 
-        // --- 6. 文件读取与 DeepSeek AI 接口解析 ---
         window.handleDragOver = function(event) { event.preventDefault(); event.stopPropagation(); document.getElementById('drop-zone').classList.add('border-brand-500', 'bg-brand-500/10'); };
         window.handleDragLeave = function(event) { event.preventDefault(); event.stopPropagation(); document.getElementById('drop-zone').classList.remove('border-brand-500', 'bg-brand-500/10'); };
-        
         window.triggerFileInput = function() { document.getElementById('file-upload').click(); }
         window.handleFileSelect = async function(event) { const file = event.target.files[0]; if(file) await readFile(file); }
-        
         window.handleDrop = async function(event) {
             event.preventDefault(); event.stopPropagation();
             document.getElementById('drop-zone').classList.remove('border-brand-500', 'bg-brand-500/10');
@@ -571,12 +551,54 @@
             }
         }
 
-        // ★ 核心除重函数：极其精确地抓取海洋王灯具的核心型号 (如 9826H, NFC9197) ★
-        function extractCoreModel(text) {
-            const match = text.match(/([A-Za-z]{3}\d{4})|(\d{4}[A-Za-z])|(HYW-[A-Za-z0-9\-]+)/i);
-            if (match) return match[0].toUpperCase();
-            const fallback = text.match(/[A-Za-z0-9]{4,}/);
-            return fallback ? fallback[0].toUpperCase() : "UNKNOWN_" + Date.now();
+        // ★ 核心升级 1：精准前缀分类算法 ★
+        function autoCategorize(name, code, filename) {
+            const str = (name + " " + (code||"") + " " + (filename||"")).toUpperCase();
+            
+            // 匹配类似 BPC8767, NGC9828, SFW6110, FL4800 的标准编码
+            const codeMatch = str.match(/([A-Z]{1,3})(\d{4})/);
+            
+            if(codeMatch) {
+                const prefix = codeMatch[1];
+                const num = codeMatch[2];
+                let type = "";
+                let form = "";
+                
+                // 1. 根据第一位字母或数字首位判断大类属性
+                const firstChar = prefix.charAt(0);
+                if (firstChar === 'B' || num.startsWith('8')) type = "防爆";
+                else if (firstChar === 'N' || num.startsWith('9')) type = "非防爆";
+                else if (firstChar === 'J' || firstChar === 'R' || num.startsWith('7')) return "便携";
+                else if (firstChar === 'S' || firstChar === 'Y' || firstChar === 'M' || num.startsWith('6')) return "移动";
+                else if (num.startsWith('5')) return "便携"; // 工作灯归类
+                else if (num.startsWith('4')) return "信号灯类";
+                
+                // 2. 根据第二位字母判断灯具具体形态
+                if (prefix.length >= 2) {
+                    const secondChar = prefix.charAt(1);
+                    if (secondChar === 'G') form = "高顶灯";
+                    else if (secondChar === 'P') form = "平台灯";
+                    else if (secondChar === 'F') form = "泛光灯";
+                    else if (secondChar === 'T') form = "投光灯";
+                    else if (secondChar === 'L') form = "路灯";
+                    else if (secondChar === 'J') form = "聚光灯";
+                    else if (secondChar === 'X') form = "信号灯";
+                    else if (secondChar === 'Y') form = "荧光灯";
+                }
+                
+                if (type && form) return type + form; // 例如：防爆平台灯, 非防爆高顶灯
+                if (type) return type + "固定照明";
+                if (form) return form;
+            }
+            
+            // 兜底文本关键词提取
+            if (/BPC|BPE|防爆/.test(str)) return "防爆照明";
+            if (/NGC|9826|高顶|工矿/.test(str)) return "高顶灯";
+            if (/NFC|平台|通路/.test(str)) return "平台灯";
+            if (/便携|手电/.test(str)) return "便携";
+            if (/移动|升降/.test(str)) return "移动";
+            
+            return "工业照明";
         }
 
         window.startAIParsing = async function() {
@@ -602,20 +624,23 @@
                 const parsedResult = await callDeepSeekAPI(textContent, dragFileName);
                 if(!parsedResult || !parsedResult.name) throw new Error("解析格式错误");
 
-                // ★ 使用核心型号算法强制覆盖旧数据，绝不产生重名
-                const coreModelStr = extractCoreModel(parsedResult.name) || extractCoreModel(dragFileName);
-                // 强制将文档 ID 命名为 "ok_prod_NFC9197" 这种格式。一旦存入 Firebase，同型号必定互相覆盖！
-                const finalId = "ok_prod_" + coreModelStr;
-                let productCode = parsedResult.code || `OK-${coreModelStr}`;
+                // ★ 核心升级 2：以文件名为绝对依据的覆盖逻辑
+                let cleanFileName = dragFileName ? dragFileName.replace(/\.[^/.]+$/, "").replace(/\(\d+\)/g, "").trim() : "";
+                let identifier = cleanFileName || parsedResult.name;
+                const finalId = "ok_prod_" + identifier.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "_");
 
-                // 检查本地库是否已经有这个 ID（仅仅用于给用户展示“即将覆盖”的提示文字）
-                const isExisting = window.productDatabase.some(p => p.id === finalId || extractCoreModel(p.name) === coreModelStr);
+                let productCode = parsedResult.code || `OK-${parsedResult.name.split(' ')[0]}`;
+                
+                // 检查是否将要覆盖现有数据
+                const isExisting = window.productDatabase.some(p => p.id === finalId || p.sourceFileName === dragFileName);
 
                 tempParsedData = {
-                    id: finalId, // 唯一身份证，防重复的关键
+                    id: finalId, 
+                    sourceFileName: dragFileName, 
                     name: parsedResult.name,
                     code: productCode,
-                    category: parsedResult.category || "工业照明",
+                    // ★ 使用写好的海洋王专属分类器
+                    category: autoCategorize(parsedResult.name, productCode, dragFileName),
                     wattage: parsedResult.wattage || "-",
                     efficacy: parsedResult.efficacy || "-",
                     protection: parsedResult.protection || "-",
@@ -633,12 +658,12 @@
                         <div class="flex justify-between items-start">
                             <span class="font-bold text-white text-sm">${tempParsedData.name}</span>
                             <span class="text-[9px] ${isExisting ? 'bg-brand-gold/20 text-brand-gold' : 'bg-brand-500/20 text-brand-500'} px-1.5 py-0.5 rounded">
-                                ${isExisting ? `精准识别同款(${coreModelStr})·将强力覆盖旧档` : '全新产品档案'}
+                                ${isExisting ? `文件名一致·将100%覆盖旧档` : '全新产品档案'}
                             </span>
                         </div>
                         <div class="grid grid-cols-2 gap-2 mt-2 text-[10px] text-slate-400">
                             <div>编码：<span class="text-slate-200">${tempParsedData.code}</span></div>
-                            <div>核心型号鉴权：<span class="text-brand-500">${coreModelStr}</span></div>
+                            <div>智能分类：<span class="text-brand-500">${tempParsedData.category}</span></div>
                         </div>
                         <div class="text-xs text-slate-300 bg-slate-800/50 p-2.5 rounded-lg border-l-2 ${isExisting ? 'border-brand-gold' : 'border-brand-accent'}">
                             <strong>AI 出题报告：</strong> 根据您的丰富文稿，完美拆分出 <span class="text-brand-500 font-bold text-sm">${tempParsedData.quizQuestions.length}</span> 道多维度实战考题！
@@ -661,7 +686,7 @@
             }
         };
 
-        // --- ★ 解放题量封印：最少15题，上不封顶！& 专属 API 密钥直连 ★ ---
+        // --- ★ 解放题量封印指令 & 您的专属 API 密钥 ---
         async function callDeepSeekAPI(text, fileName) {
             const promptText = `你是海洋王工业照明领域的资深技术支持与培训出题专家。请根据以下输入，提炼该灯具产品的核心信息，并**自动生成用于销售培训的实战单选题**。
 
@@ -670,16 +695,16 @@
 文本内容：${text || '无'}
 
 处理要求：
-1. 提取或推断：产品名称、产品订货编码（若无则推测）、分类（平台灯/高顶灯/防爆灯等）、功率、光效、防护/防腐等级、重量。
+1. 提取或推断：产品名称、产品订货编码（若无则推测）、功率、光效、防护/防腐等级、重量。
 2. 提炼：3-5 条核心优势亮点（features）和 1 条针对竞品的打法或控标点（pkPoint）。
-3. 智能出题（★绝对禁止重复，尽量榨干文稿考点★）：请根据文稿的丰富程度，**生成最少 15 道单项选择题，如果文档信息量大，请尽可能多地生成（例如 20 道或更多），上不封顶**。
-   - 必须严格涵盖以下5个不同维度：① 参数数值记忆、② 独特结构优势（如散热/呼吸阀/防潮设计）、③ 竞品劣势打击/控标点、④ 目标应用场景（如炼钢/皮带通廊/配电室）、⑤ 安装与维护注意事项。
+3. 智能出题（★绝对禁止重复，尽量榨干文稿考点★）：请根据文稿的丰富程度，**生成最少 15 道单项选择题，如果文档信息量大，请尽可能多地生成（例如 20 道、30道 或更多），上不封顶**。
+   - 必须严格涵盖以下不同维度：① 参数数值记忆、② 独特结构优势（如散热/呼吸阀/防爆防潮设计）、③ 竞品劣势打击/控标点、④ 目标应用场景（如炼钢/皮带通廊/配电室/化工厂）、⑤ 安装与维护注意事项。
    - 警告：**所有题目的考点必须完全独立，绝不能出现换汤不换药的重复提问！** 选项要有强烈的实战迷惑性。
 
 输出格式：请务必只输出一段合法的 JSON 字符串，不要包含任何 markdown 语法（如 \`\`\`json ），确保可以直接被 JSON.parse 解析。
 JSON 格式严格遵守如下：
 {
-  "name": "产品全名", "code": "订货编码", "category": "分类", "wattage": "功率", "efficacy": "光效", "protection": "防护等级", "weight": "重量",
+  "name": "产品全名", "code": "订货编码", "wattage": "功率", "efficacy": "光效", "protection": "防护等级", "weight": "重量",
   "features": ["特点1", "特点2"], "pkPoint": "控标点",
   "questions": [ { "question": "问题描述", "options": ["A选项", "B选项", "C选项", "D选项"], "answer": 0 } ]
 }`;
@@ -694,7 +719,7 @@ JSON 格式严格遵守如下：
                     { role: "system", content: "你是一个只输出合法 JSON 字符串的机器，严禁附带任何自然语言解释和 Markdown 代码块标记。" },
                     { role: "user", content: promptText }
                 ],
-                temperature: 0.3, // 保持低随机性，确保 JSON 格式稳定不出错
+                temperature: 0.3,
                 response_format: { type: "json_object" } 
             };
 
@@ -707,23 +732,14 @@ JSON 格式严格遵守如下：
                 body: JSON.stringify(payload) 
             });
 
-            if (!response.ok) {
-                const errDetail = await response.json().catch(() => ({}));
-                console.error("DeepSeek API 报错:", errDetail);
-                throw new Error("API 请求失败");
-            }
+            if (!response.ok) throw new Error("API 请求失败");
 
             const result = await response.json();
             let resultText = result.choices[0].message.content.trim();
             
-            // 剥离偶尔可能出现的多余标记
-            if (resultText.startsWith('```json')) {
-                resultText = resultText.substring(7);
-                if (resultText.endsWith('```')) { resultText = resultText.slice(0, -3); }
-            } else if (resultText.startsWith('```')) {
-                resultText = resultText.substring(3);
-                if (resultText.endsWith('```')) { resultText = resultText.slice(0, -3); }
-            }
+            if (resultText.startsWith('```json')) resultText = resultText.substring(7);
+            else if (resultText.startsWith('```')) resultText = resultText.substring(3);
+            if (resultText.endsWith('```')) resultText = resultText.slice(0, -3);
 
             try {
                 return JSON.parse(resultText);
@@ -753,26 +769,29 @@ JSON 格式严格遵守如下：
             setTimeout(() => { window.switchTab('learning'); document.getElementById('courseSelect').value = 'ALL'; window.loadCourse(); }, 1500);
         };
 
-        // --- ★ 7. 培训中心模块 (科学大考抽题算法：每款独立抽10题后混编) ★ ---
+        // --- ★ 核心升级 3：综合大考抽题算法（各产品抽10题后混编） ★ ---
         window.updateCourseSelect = function() {
             const select = document.getElementById('courseSelect');
             if(!select) return;
             const currentVal = select.value;
             
-            // ★ 修改显示文案，提示抽题逻辑
-            let html = `<option value="ALL">🌟 全系产品综合大考卷 (每款产品各抽取 10 题混编)</option>`;
-            
-            // 下拉菜单显示去重逻辑 (确保即使数据库有残留旧数据，下拉菜单也只显示干净的名字)
+            let totalMixedQs = 0;
             const uniqueOptions = new Set();
+            let optionsHtml = '';
             
             if(window.productDatabase && window.productDatabase.length > 0){
                 window.productDatabase.forEach(p => {
                     if(p.quizQuestions && p.quizQuestions.length > 0 && !uniqueOptions.has(p.name)) {
                         uniqueOptions.add(p.name);
-                        html += `<option value="${p.id}">📚 专项深造考核：${p.name} (${p.quizQuestions.length}题)</option>`;
+                        totalMixedQs += Math.min(10, p.quizQuestions.length); // 大考每款贡献最多10题
+                        optionsHtml += `<option value="${p.id}">📚 专项深造：${p.name} (${p.quizQuestions.length}题)</option>`;
                     }
                 });
             }
+            
+            let html = `<option value="ALL">🌟 全系综合大考卷 (每款各抽10题，共计 ${totalMixedQs} 题)</option>`;
+            html += optionsHtml;
+            
             select.innerHTML = html;
             if (currentVal && Array.from(select.options).some(o => o.value === currentVal)) { select.value = currentVal; } else { select.value = 'ALL'; }
             window.loadCourse();
@@ -785,12 +804,12 @@ JSON 格式严格遵守如下：
             
             if (courseId === 'ALL') {
                 let allQ = [];
-                // 遍历全网所有产品
+                // 遍历全网所有产品，各抽 10 题汇聚
                 (window.productDatabase || []).forEach(p => { 
                     if (p.quizQuestions && p.quizQuestions.length > 0) { 
                         // 将该产品的题目先打乱
                         let shuffledProductQs = [...p.quizQuestions].sort(() => 0.5 - Math.random());
-                        // 从该产品中最多抽取 10 道题 (不够 10 题则全拿)
+                        // 从该产品中抽取 10 道题 (不够 10 题则全拿)
                         let selectedQs = shuffledProductQs.slice(0, 10);
                         // 贴上产品名字签，方便在卷面上显示出处
                         selectedQs = selectedQs.map(q => ({ ...q, productName: p.name }));
@@ -801,7 +820,6 @@ JSON 格式严格遵守如下：
                 // ★ 最后将整张大考卷打乱顺序，形成真正的混合摸底考试
                 questions = allQ.sort(() => 0.5 - Math.random()); 
             } else {
-                // 专项考核固定抽取它的全部题目
                 const product = (window.productDatabase || []).find(p => p.id === courseId);
                 questions = product && product.quizQuestions ? product.quizQuestions : [];
             }

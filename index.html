@@ -49,7 +49,7 @@
                 <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-brand-accent flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-brand-500/20">OK</div>
                 <div>
                     <h1 class="text-lg font-bold bg-gradient-to-r from-white via-slate-200 to-brand-accent bg-clip-text text-transparent">海洋王智灯 Hub</h1>
-                    <p class="text-[10px] sm:text-xs text-slate-400">AI 工业照明技术支持与培训平台</p>
+                    <p class="text-[10px] sm:text-xs text-slate-400">AI 工业照明技术支持与培训平台 (智谱 GLM-4 版)</p>
                 </div>
             </div>
 
@@ -213,7 +213,7 @@
         <span class="absolute -top-2 -right-2 bg-red-500 text-[9px] font-bold px-1.5 py-0.5 rounded-full border-2 border-slate-950 animate-pulse">AI</span>
     </button>
 
-    <!-- ★ AI 选型顾问 对话面板 (已修复 flex 属性，内嵌完美滚动条) ★ -->
+    <!-- ★ AI 选型顾问 对话面板 ★ -->
     <div id="copilot-panel" class="fixed bottom-40 md:bottom-28 right-6 w-[90vw] md:w-96 h-[500px] max-h-[70vh] bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl flex flex-col hidden z-50 transform transition-transform duration-300 origin-bottom-right">
         <div class="px-4 py-3 border-b border-slate-800 flex justify-between items-center bg-slate-900 rounded-t-2xl">
             <div class="flex items-center gap-2">
@@ -655,7 +655,7 @@
             const originalBtnHtml = btn.innerHTML;
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> AI 正在深度阅读并无上限裂变题库中...`;
             btn.disabled = true;
-            document.getElementById('ai-status-tag').textContent = "DeepSeek 大模型解析中...";
+            document.getElementById('ai-status-tag').textContent = "智谱 GLM-4 大模型解析中...";
             document.getElementById('ai-status-tag').className = "text-[10px] px-2 py-0.5 rounded bg-brand-gold/20 text-brand-gold font-bold border border-brand-gold/30 animate-pulse";
             document.getElementById('ai-output-box').innerHTML = `
                 <div class="flex flex-col items-center justify-center h-full text-slate-400 py-10 space-y-4">
@@ -664,7 +664,7 @@
                 </div>`;
 
             try {
-                const parsedResult = await callDeepSeekAPI(textContent, dragFileName);
+                const parsedResult = await callZhipuAPI(textContent, dragFileName);
                 if(!parsedResult || !parsedResult.name) throw new Error("解析格式错误");
 
                 let cleanFileName = dragFileName ? dragFileName.replace(/\.[^/.]+$/, "").replace(/\(\d+\)/g, "").trim() : "";
@@ -726,8 +726,8 @@
             }
         };
 
-        // ★ 核心修复：加入环境智能侦测，自动切换 API 路径防跨域 ★
-        async function callDeepSeekAPI(text, fileName) {
+        // ★ 核心替换：接入智谱 GLM-4-Flash 大模型 ★
+        async function callZhipuAPI(text, fileName) {
             const promptText = `你是海洋王工业照明领域的资深技术支持与培训出题专家。请根据以下输入，提炼该灯具产品的核心信息，并**自动生成用于销售培训的实战单选题**。
 
 输入信息：
@@ -749,29 +749,24 @@ JSON 格式严格遵守如下：
   "questions": [ { "question": "问题描述", "options": ["A选项", "B选项", "C选项", "D选项"], "answer": 0 } ]
 }`;
 
-            const DEEPSEEK_API_KEY = "sk-f588579c2d6a428dba13d9e89938f99f"; 
-            
-            // 自动环境侦测：如果在 Vercel 等线上环境运行，自动走反向代理路径
-            let apiUrl = "https://api.deepseek.com/chat/completions";
-            if (window.location.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && window.location.protocol !== 'file:') {
-                apiUrl = "/api/deepseek/chat/completions";
-            }
+            const ZHIPU_API_KEY = "e9829c1df2a345d0b53c794df218d018.iKNAn9AtFR3giQEj"; 
+            const apiUrl = "https://open.bigmodel.cn/api/paas/v4/chat/completions";
 
             const payload = {
-                model: "deepseek-chat",
+                model: "glm-4-flash",
                 messages: [
                     { role: "system", content: "你是一个只输出合法 JSON 字符串的机器，严禁附带任何自然语言解释和 Markdown 代码块标记。" },
                     { role: "user", content: promptText }
                 ],
-                temperature: 0.3,
-                response_format: { type: "json_object" } 
+                temperature: 0.3
             };
 
             const response = await fetch(apiUrl, { 
                 method: 'POST', 
+                mode: 'cors',
                 headers: { 
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
+                    'Authorization': `Bearer ${ZHIPU_API_KEY}`
                 }, 
                 body: JSON.stringify(payload) 
             });
@@ -929,7 +924,7 @@ JSON 格式严格遵守如下：
             }
         };
 
-        // --- ★ AI 选型顾问 (Sales Copilot) 核心逻辑 ★ ---
+        // --- ★ 悬浮 AI 选型顾问 (Sales Copilot) 核心逻辑 ★ ---
         window.toggleCopilot = function() {
             const panel = document.getElementById('copilot-panel');
             panel.classList.toggle('hidden');
@@ -981,7 +976,6 @@ JSON 格式严格遵守如下：
             chatArea.scrollTop = chatArea.scrollHeight;
         }
 
-        // ★ 核心修复：Copilot 环境智能侦测，自动切换 API 路径 ★
         window.sendCopilotMessage = async function() {
             const input = document.getElementById('copilot-input');
             const query = input.value.trim();
@@ -1026,23 +1020,19 @@ ${contextText}
 
             appendCopilotMessage('ai-typing', '<span class="typing-cursor">正在检索本地灯具库并组织话术...</span>');
 
-            const DEEPSEEK_API_KEY = "e9829c1df2a345d0b53c794df218d018.iKNAn9AtFR3giQEj"; 
-            
-            // 自动环境侦测：如果在 Vercel 等线上环境运行，自动走反向代理路径
-            let apiUrl = "[https://api.deepseek.com/chat/completions](https://api.deepseek.com/chat/completions)";
-            if (window.location.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && window.location.protocol !== 'file:') {
-                apiUrl = "/api/deepseek/chat/completions";
-            }
+            const ZHIPU_API_KEY = "e9829c1df2a345d0b53c794df218d018.iKNAn9AtFR3giQEj"; 
+            const apiUrl = "[https://open.bigmodel.cn/api/paas/v4/chat/completions](https://open.bigmodel.cn/api/paas/v4/chat/completions)";
 
             try {
                 const response = await fetch(apiUrl, {
                     method: 'POST',
+                    mode: 'cors',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
+                        'Authorization': `Bearer ${ZHIPU_API_KEY}`
                     },
                     body: JSON.stringify({
-                        model: "deepseek-chat",
+                        model: "glm-4-flash",
                         messages: [{ role: "user", content: prompt }],
                         temperature: 0.4
                     })
@@ -1054,7 +1044,7 @@ ${contextText}
                 updateCopilotMessage(reply);
             } catch(e) {
                 console.error("Copilot 请求失败", e);
-                updateCopilotMessage("网络异常，无法连接到选型大脑，请稍后再试。");
+                updateCopilotMessage(`⚠️ 网络或接口异常 (${e.message})。<br>请确认：<br>1. 电脑网络正常<br>2. 浏览器未开启严格的防追踪拦截<br>3. 密钥额度充足`);
             }
         };
     </script>

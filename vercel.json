@@ -3,6 +3,10 @@
     {
       "source": "/api/deepseek/:path*",
       "destination": "https://api.deepseek.com/:path*"
+    },
+    {
+      "source": "/api/zhipu/:path*",
+      "destination": "https://open.bigmodel.cn/api/paas/v4/:path*"
     }
   ]
 }

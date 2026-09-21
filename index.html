@@ -778,7 +778,7 @@ JSON 格式严格遵守如下：
 
             } catch (error) {
                 console.error("AI解析错误:", error);
-                document.getElementById('ai-output-box').innerHTML = `<div class="text-red-500 text-xs text-center py-10">AI 解析失败: ${error.message}</div>`;
+                document.getElementById('ai-output-box').innerHTML = `<div class="text-red-500 text-xs text-center py-10">AI 解析失败，请检查网络环境或重新提取文本。</div>`;
                 document.getElementById('ai-status-tag').textContent = "解析异常";
                 window.showToast("AI 解析出现异常", "error");
             } finally {
@@ -973,6 +973,7 @@ JSON 格式严格遵守如下：
             chatArea.scrollTop = chatArea.scrollHeight;
         }
 
+        // ★ 核心替换：直接喂食整个产品库，彻底消灭 AI 幻觉和漏检 ★
         window.sendCopilotMessage = async function() {
             const input = document.getElementById('copilot-input');
             const query = input.value.trim();
@@ -981,39 +982,26 @@ JSON 格式严格遵守如下：
             appendCopilotMessage('user', query);
             input.value = '';
 
-            let contextText = "未检索到匹配的本地产品。";
+            let contextText = "未检索到本地产品。";
             if(window.productDatabase && window.productDatabase.length > 0) {
-                 const keywords = query.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, ' ').split(' ').filter(k => k.length > 0);
-                 
-                 let scored = window.productDatabase.map(p => {
-                     let score = 0;
-                     let searchStr = (p.name + " " + (p.category||"") + " " + (p.wattage||"") + " " + (p.protection||"") + " " + (p.features||[]).join(' ')).toLowerCase();
-                     keywords.forEach(kw => { if(searchStr.includes(kw.toLowerCase())) score++; });
-                     return { product: p, score: score };
+                 // 提取前 30 款最近录入的产品发给大模型，让大模型自行执行理解与匹配！
+                 let candidates = window.productDatabase.slice(0, 30).map(p => {
+                     return `【型号】${p.name} (编码:${p.code}) | 分类:${p.category} | 功率:${p.wattage} | 防护:${p.protection} | 卖点:${(p.features||[]).join('; ')} | 竞品打击:${p.pkPoint||'无'}`;
                  });
-                 
-                 scored.sort((a,b) => b.score - a.score);
-                 
-                 let top3 = scored.slice(0, 3).filter(item => item.score > 0).map(item => {
-                     return `【型号】${item.product.name} (编码:${item.product.code}) | 功率:${item.product.wattage} | 防护防腐:${item.product.protection} | 核心卖点:${(item.product.features||[]).join('; ')} | 竞品打击:${item.product.pkPoint||'无'}`;
-                 });
-                 
-                 if(top3.length > 0) {
-                     contextText = top3.join('\n\n');
-                 }
+                 contextText = candidates.join('\n\n');
             }
 
             const prompt = `你是海洋王工业照明的资深AI选型顾问。
 客户提问：“${query}”
 
-以下是系统从本地产品库中为你实时检索到的最匹配的产品核心参数：
+以下是当前系统本地库中收录的真实产品列表：
 ${contextText}
 
 请你执行以下操作：
-1. 结合客户的需求，优先从上述产品中推荐，并说明推荐理由。
-2. 语言要专业、精炼、热情，像是资深销售在对客户说话。
-3. 如果检索到的产品明显不符合需求，或者没有检索到，请说明“当前本地库中暂无完美匹配的型号，建议更新全系选型手册”，**绝对不可以自己捏造虚假参数或编造不存在的海洋王型号**。
-4. 重点参数请使用 Markdown 加粗。`;
+1. 必须且只能从上述【本地库产品】中为客户挑选最符合需求的产品进行推荐。
+2. 推荐时说明匹配理由，语言要专业、热情。
+3. 警告：如果上述产品列表中没有任何一款产品符合客户需求，请直接回复：“抱歉，当前本地库中暂无完美匹配的型号，建议更新产品档案。”
+4. 绝对禁止捏造、编造或推荐任何不在上述列表中的型号！`;
 
             appendCopilotMessage('ai-typing', '<span class="typing-cursor">正在检索本地灯具库并组织话术...</span>');
 
@@ -1021,7 +1009,7 @@ ${contextText}
                 const data = await fetchZhipuAPI({
                     model: "glm-4-flash",
                     messages: [{ role: "user", content: prompt }],
-                    temperature: 0.4
+                    temperature: 0.2 // 调低随机性，强制 AI 规矩回答
                 });
                 
                 const reply = data.choices[0].message.content;

@@ -574,7 +574,11 @@
                     for (const fileName of slideFiles) {
                         const xmlContent = await zip.file(fileName).async("string");
                         const textMatches = xmlContent.match(/<a:t[^>]*>.*?<\/a:t>/g) || [];
-                        const slideText = textMatches.map(tag => tag.replace(/<[^>]+>/g, '')).join(' ');
+                        // ★ 乱码清洗器：将 XML 提取出的字符翻译回正常文本
+                        const slideText = textMatches.map(tag => {
+                            let text = tag.replace(/<[^>]+>/g, '');
+                            return text.replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&nbsp;/g, ' ');
+                        }).join(' ');
                         if (slideText.trim()) slideTexts.push(slideText);
                     }
                     extractedText = slideTexts.join('\n\n');
@@ -644,7 +648,6 @@
             return "工业照明";
         }
 
-        // ★ AI 代理请求自动切换 ★
         async function fetchZhipuAPI(payload) {
             const ZHIPU_API_KEY = "e9829c1df2a345d0b53c794df218d018.iKNAn9AtFR3giQEj"; 
             
@@ -698,7 +701,7 @@
 处理要求：
 1. 提取或推断：产品名称、产品订货编码（若无则推测）、功率、光效、防护/防腐等级、重量。
 2. 提炼：3-5 条核心优势亮点（features）和 1 条针对竞品的打法或控标点（pkPoint）。
-3. 智能出题（★绝对禁止重复，尽量榨干文稿考点★）：请根据文稿的丰富程度，**生成最少 15 道单项选择题，如果文档信息量大，请尽可能多地生成（例如 20 道、30道 或更多），上不封顶**。
+3. 智能出题（★绝对禁止重复，尽量榨干文稿考点★）：请根据文稿的丰富程度，【强制指令】必须生成最少 15 道单项选择题，严禁偷工减料，如果少于15题将被视为生成失败，上不封顶。
    - 必须严格涵盖以下不同维度：① 参数数值记忆、② 独特结构优势（如散热/呼吸阀/防爆防潮设计）、③ 竞品劣势打击/控标点、④ 目标应用场景（如炼钢/皮带通廊/配电室/化工厂）、⑤ 安装与维护注意事项。
    - 警告：**所有题目的考点必须完全独立，绝不能出现换汤不换药的重复提问！** 选项要有强烈的实战迷惑性。
 
@@ -778,7 +781,7 @@ JSON 格式严格遵守如下：
 
             } catch (error) {
                 console.error("AI解析错误:", error);
-                document.getElementById('ai-output-box').innerHTML = `<div class="text-red-500 text-xs text-center py-10">AI 解析失败，请检查网络环境或重新提取文本。</div>`;
+                document.getElementById('ai-output-box').innerHTML = `<div class="text-red-500 text-xs text-center py-10">AI 解析失败: ${error.message}</div>`;
                 document.getElementById('ai-status-tag').textContent = "解析异常";
                 window.showToast("AI 解析出现异常", "error");
             } finally {
@@ -973,7 +976,6 @@ JSON 格式严格遵守如下：
             chatArea.scrollTop = chatArea.scrollHeight;
         }
 
-        // ★ 核心替换：直接喂食整个产品库，彻底消灭 AI 幻觉和漏检 ★
         window.sendCopilotMessage = async function() {
             const input = document.getElementById('copilot-input');
             const query = input.value.trim();
@@ -984,7 +986,6 @@ JSON 格式严格遵守如下：
 
             let contextText = "未检索到本地产品。";
             if(window.productDatabase && window.productDatabase.length > 0) {
-                 // 提取前 30 款最近录入的产品发给大模型，让大模型自行执行理解与匹配！
                  let candidates = window.productDatabase.slice(0, 30).map(p => {
                      return `【型号】${p.name} (编码:${p.code}) | 分类:${p.category} | 功率:${p.wattage} | 防护:${p.protection} | 卖点:${(p.features||[]).join('; ')} | 竞品打击:${p.pkPoint||'无'}`;
                  });
@@ -1009,7 +1010,7 @@ ${contextText}
                 const data = await fetchZhipuAPI({
                     model: "glm-4-flash",
                     messages: [{ role: "user", content: prompt }],
-                    temperature: 0.2 // 调低随机性，强制 AI 规矩回答
+                    temperature: 0.2
                 });
                 
                 const reply = data.choices[0].message.content;
